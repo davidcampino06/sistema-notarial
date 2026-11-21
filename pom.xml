@@ -26,11 +26,11 @@
 
     <build>
         <finalName>sistema-notarial</finalName>
-        <!-- estilos.css está junto a las ventanas (carpeta frontend); se copia al .jar -->
+        <!-- estilos.css y fondo.svg están junto a las ventanas (carpeta frontend); se copian al .jar -->
         <resources>
             <resource>
                 <directory>src/main/java</directory>
-                <includes><include>**/*.css</include></includes>
+                <includes><include>**/*.css</include><include>**/*.svg</include></includes>
             </resource>
         </resources>
         <plugins>

@@ -50,16 +50,26 @@ public class VentanaLogin extends Ventana {
     }
 
     private void mostrar(HttpExchange ex) throws IOException {
-        responder(ex, pagina("Sistema de Gestión Notarial", null,
-                "<div class='login tarjeta'>" + mensajeOk(ex)
+        String html = mensajeOk(ex)
                 + "<form method='post' action='/'>"
-                + "<label>Usuario</label><input name='campoUsuario' required autofocus>"
-                + "<label>Contraseña</label><input name='campoContrasena' type='password' required>"
-                + "<button name='botonIngresar'>Ingresar</button>"
+                // campoUsuario
+                + "<label for='campoUsuario'>Usuario</label>"
+                + "<div class='campo'>" + ICONO_USUARIO
+                + "<input id='campoUsuario' name='campoUsuario' placeholder='Escriba su usuario' required autofocus></div>"
+                // campoContrasena (con el ojo para mostrar u ocultar la contraseña)
+                + "<label for='campoContrasena'>Contraseña</label>"
+                + "<div class='campo'>" + ICONO_CANDADO
+                + "<input id='campoContrasena' name='campoContrasena' type='password' placeholder='Escriba su contraseña' required>"
+                + "<button type='button' class='ver-clave' title='Mostrar contraseña' onclick=\"var c=document.getElementById('campoContrasena');"
+                + "c.type=c.type==='password'?'text':'password'\">" + ICONO_OJO + "</button></div>"
+                + "<a class='enlace-pequeno' href='/recuperar'>¿Olvidó su contraseña?</a>"
+                // botonIngresar
+                + "<button name='botonIngresar' class='boton-principal'>Ingresar " + ICONO_FLECHA + "</button>"
                 + "</form>"
-                + "<p class='suave'><a href='/recuperar'>¿Olvidó su contraseña?</a></p></div>"
-                + "<p class='suave' style='text-align:center'>¿Es cliente? "
-                + "<a href='/consulta'>Consulte el estado de su trámite</a></p>"));
+                + "<div class='separador'>¿Es cliente de la notaría?</div>"
+                + "<a class='boton-claro' href='/consulta'>Consulte el estado de su trámite</a>"
+                + "<p class='pie'>Las cuentas de funcionarios las crea el administrador.</p>";
+        responder(ex, paginaPublica("Iniciar sesión", "Acceso para funcionarios de la notaría", html));
     }
 
     /** Valida usuario y contraseña con el Núcleo y abre la sesión. */
@@ -72,13 +82,14 @@ public class VentanaLogin extends Ventana {
     }
 
     private void mostrarRecuperar(HttpExchange ex) throws IOException {
-        responder(ex, pagina("Recuperar contraseña", null,
-                "<div class='login tarjeta'>"
-                + "<p class='suave'>Se enviará una contraseña temporal al correo registrado del usuario.</p>"
-                + "<form method='post' action='/recuperar'>"
-                + "<label>Usuario</label><input name='campoUsuario' required>"
-                + "<button>Enviar</button></form>"
-                + "<p class='suave'><a href='/'>Volver al inicio de sesión</a></p></div>"));
+        String html = "<form method='post' action='/recuperar'>"
+                + "<label for='campoUsuario'>Usuario</label>"
+                + "<div class='campo'>" + ICONO_USUARIO
+                + "<input id='campoUsuario' name='campoUsuario' placeholder='Escriba su usuario' required autofocus></div>"
+                + "<button class='boton-principal'>Enviar contraseña temporal " + ICONO_FLECHA + "</button></form>"
+                + "<p class='pie'><a href='/'>Volver al inicio de sesión</a></p>";
+        responder(ex, paginaPublica("Recuperar contraseña",
+                "Le enviaremos una contraseña temporal al correo registrado", html));
     }
 
     /**

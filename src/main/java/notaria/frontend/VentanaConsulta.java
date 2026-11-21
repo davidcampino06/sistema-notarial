@@ -41,15 +41,21 @@ public class VentanaConsulta extends Ventana {
             resultado = consultarEstado(radicado, documento);
         }
 
-        String html = "<div class='login tarjeta'>"
-                + "<form method='get' action='/consulta'>"
-                + "<label>Número de radicado</label><input name='campoRadicado' required placeholder='2026-000001' value='"
-                + esc(radicado) + "'>"
-                + "<label>Número de documento del cliente</label><input name='campoDocumento' required value='"
-                + esc(documento) + "'>"
-                + "<button>Consultar</button></form>" + resultado
-                + "<p class='suave'><a href='/'>Ingreso de funcionarios</a></p></div>";
-        responder(ex, pagina("Consultar mi trámite", null, html));
+        String html = "<form method='get' action='/consulta'>"
+                // campoRadicado
+                + "<label for='campoRadicado'>Número de radicado</label>"
+                + "<div class='campo'>" + ICONO_DOCUMENTO
+                + "<input id='campoRadicado' name='campoRadicado' required placeholder='Ej: 2026-000001' value='"
+                + esc(radicado) + "'></div>"
+                // campoDocumento
+                + "<label for='campoDocumento'>Documento del cliente</label>"
+                + "<div class='campo'>" + ICONO_TARJETA
+                + "<input id='campoDocumento' name='campoDocumento' required placeholder='Número de cédula o NIT' value='"
+                + esc(documento) + "'></div>"
+                + "<button class='boton-principal'>Consultar " + ICONO_FLECHA + "</button></form>"
+                + resultado
+                + "<p class='pie'><a href='/'>Ingreso de funcionarios</a></p>";
+        responder(ex, paginaPublica("Consultar trámite", "Vea en qué estado está su trámite", html));
     }
 
     /**
@@ -72,10 +78,10 @@ public class VentanaConsulta extends Ventana {
             }
         }
         if (!esCliente) {
-            return "<div class='alerta error' style='margin-top:14px'>No encontramos un trámite con ese radicado "
+            return "<div class='alerta error'>No encontramos un trámite con ese radicado "
                     + "y ese documento. Revise los datos.</div>";
         }
-        return "<div class='alerta ok' style='margin-top:14px'>"
+        return "<div class='resultado-consulta'>"
                 + "<b>" + esc(tramite.getTipo()) + "</b> · " + esc(tramite.getNumeroRadicado()) + "<br>"
                 + "Radicado el " + fecha(tramite.getFechaRadicacion()) + "<br>"
                 + "Estado actual: " + VentanaPrincipal.estado(tramite) + "</div>";
