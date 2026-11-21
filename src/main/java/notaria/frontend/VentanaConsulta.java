@@ -1,12 +1,12 @@
-package notaria.ventanas;
+package notaria.frontend;
 
 import com.sun.net.httpserver.HttpExchange;
 import java.io.IOException;
 import java.util.Map;
-import notaria.Nucleo;
-import notaria.Sesion;
-import notaria.modelo.Cliente;
-import notaria.modelo.Tramite;
+import notaria.backend.Nucleo;
+import notaria.backend.Sesion;
+import notaria.backend.modelo.Cliente;
+import notaria.backend.modelo.Tramite;
 
 /**
  * Ventana PÚBLICA de consulta (vista de desarrollo): el cliente, sin iniciar

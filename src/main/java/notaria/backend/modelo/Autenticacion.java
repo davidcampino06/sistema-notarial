@@ -1,6 +1,6 @@
-package notaria.modelo;
+package notaria.backend.modelo;
 
-import notaria.Configuracion;
+import notaria.backend.Configuracion;
 
 /** Autenticación de documentos: se cobra por cada folio (hoja). */
 public class Autenticacion extends Tramite {

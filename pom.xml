@@ -26,6 +26,13 @@
 
     <build>
         <finalName>sistema-notarial</finalName>
+        <!-- estilos.css está junto a las ventanas (carpeta frontend); se copia al .jar -->
+        <resources>
+            <resource>
+                <directory>src/main/java</directory>
+                <includes><include>**/*.css</include></includes>
+            </resource>
+        </resources>
         <plugins>
             <!-- Empaqueta todo (programa + librerias) en un solo .jar ejecutable -->
             <plugin>

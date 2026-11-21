@@ -1,4 +1,4 @@
-package notaria.modelo;
+package notaria.backend.modelo;
 
 import java.security.SecureRandom;
 import java.security.spec.KeySpec;

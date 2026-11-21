@@ -1,12 +1,12 @@
-package notaria.ventanas;
+package notaria.frontend;
 
 import com.sun.net.httpserver.HttpExchange;
 import java.io.IOException;
 import java.util.Date;
 import java.util.Map;
-import notaria.Nucleo;
-import notaria.Sesion;
-import notaria.modelo.*;
+import notaria.backend.Nucleo;
+import notaria.backend.Sesion;
+import notaria.backend.modelo.*;
 
 /**
  * Ventana de radicación (vista de desarrollo). La usa el Recepcionista.

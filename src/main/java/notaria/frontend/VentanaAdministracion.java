@@ -1,18 +1,18 @@
-package notaria.ventanas;
+package notaria.frontend;
 
 import com.sun.net.httpserver.HttpExchange;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import notaria.Configuracion;
-import notaria.Nucleo;
-import notaria.Sesion;
-import notaria.modelo.EstadoTramite;
-import notaria.modelo.Liquidacion;
-import notaria.modelo.MedioPago;
-import notaria.modelo.Rol;
-import notaria.modelo.Tramite;
-import notaria.modelo.Usuario;
+import notaria.backend.Configuracion;
+import notaria.backend.Nucleo;
+import notaria.backend.Sesion;
+import notaria.backend.modelo.EstadoTramite;
+import notaria.backend.modelo.Liquidacion;
+import notaria.backend.modelo.MedioPago;
+import notaria.backend.modelo.Rol;
+import notaria.backend.modelo.Tramite;
+import notaria.backend.modelo.Usuario;
 
 /**
  * Ventana de administración (vista de desarrollo). La usa el Administrador.

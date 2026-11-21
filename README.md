@@ -8,7 +8,7 @@ lógica, de desarrollo y de despliegue).
 
 ## 1. De los diagramas al código
 
-### Vista lógica → paquete `notaria.modelo`
+### Vista lógica → carpeta `backend/modelo`
 
 | Clase del diagrama | Archivo | Qué hace |
 |---|---|---|
@@ -28,7 +28,7 @@ Asociaciones: Cliente 1..* — * Trámite (`clientes`), Trámite * — 0..1 Usua
 Trámite contiene 0..* DocumentoAdjunto (`documentos`), Trámite genera 0..1 Liquidación,
 Liquidación se paga con 0..1 Pago.
 
-### Vista de desarrollo → paquetes `notaria` y `notaria.ventanas`
+### Vista de desarrollo → carpetas `backend`, `frontend` y `basedatos`
 
 | Clase del diagrama | Métodos implementados |
 |---|---|
@@ -97,7 +97,7 @@ Todas están en `Nucleo.cambiarEstado()`, `Nucleo.liquidar()` y `Nucleo.registra
 
 ## 3. Dónde se ve la POO (para la sustentación)
 
-* **Abstracción y herencia**: `Tramite` es abstracta; sus 4 tipos heredan de ella. `Ventana` es la clase padre de las 6 ventanas.
+* **Abstracción y herencia**: `Tramite` es abstracta; sus 4 tipos heredan de ella. `Ventana` es la clase padre de las 7 ventanas.
 * **Polimorfismo**: `Nucleo.liquidar()` llama `tramite.calcularDerechos()` sin saber el tipo; cada subclase responde distinto.
 * **Encapsulamiento**: atributos `private`; la contraseña solo cambia con `cambiarContrasena()` y se guarda cifrada.
 * **Composición**: `Tramite` contiene su lista de `DocumentoAdjunto`.
@@ -106,7 +106,7 @@ Todas están en `Nucleo.cambiarEstado()`, `Nucleo.liquidar()` y `Nucleo.registra
 
 Recorrido de una acción (ej. *Aprobar*): el navegador envía el formulario → `VentanaRevision.aprobar()` →
 `Nucleo.cambiarEstado()` revisa rol y estado → `Tramite.avanzar()` cambia el estado →
-`Nucleo.guardarBaseDatos(tramite)` lo guarda en MongoDB → la ventana muestra el resultado.
+`Nucleo.guardarBaseDatos(tramite)` → `BaseDatos.guardar(tramite)` lo guarda en MongoDB → la ventana muestra el resultado.
 
 ---
 
@@ -181,17 +181,17 @@ cambia de estado de todas formas y el error queda en los Logs.
 
 ### Agregar un nuevo tipo de trámite (ej. *Registro civil*)
 
-1. Cree `modelo/RegistroCivil.java` que **extienda `Tramite`** e implemente `calcularDerechos()`, `getTipo()` y `getDetalle()`
+1. Cree `backend/modelo/RegistroCivil.java` que **extienda `Tramite`** e implemente `calcularDerechos()`, `getTipo()` y `getDetalle()`
    (copie `PoderEspecial.java` como guía).
 2. Si cobra una tarifa nueva, agréguela en el constructor de `Configuracion` (aparece sola en Administración).
 3. En `VentanaRadicacion`: agregue la opción en el `selectorTipo`, su campo y su `case` en `radicar()`.
-4. En `Nucleo`: agregue su dato en `guardarBaseDatos(Tramite)` y su `case` en `leerTramite()`.
+4. En `basedatos/BaseDatos.java`: agregue su dato en `guardar(Tramite)` y su `case` en `leerTramite()`.
 
 ### Agregar un dato a una clase (ej. `correo` al `Cliente`)
 
 1. Atributo + getter en `Cliente.java` y parámetro en el constructor.
 2. Campo en `VentanaRadicacion.bloqueCliente()` y lectura en `agregarCliente()`.
-3. Guardarlo/leerlo en `Nucleo.guardarBaseDatos(Cliente)` y `leerBaseDatos()`.
+3. Guardarlo/leerlo en `basedatos/BaseDatos.java`: `guardar(Cliente)` y `leerClientes()`.
 
 ### Agregar una acción a una ventana
 
@@ -207,19 +207,40 @@ método del `Nucleo`, bórrelo también. Para quitar una ventana completa: borre
 
 ---
 
-## 9. Estructura
+## 9. Estructura (cómo explicar el código)
 
 ```
 sistema-notarial/
-├── pom.xml                 dependencias (MongoDB, correo) y empaquetado
+├── pom.xml                 dependencias (driver de MongoDB) y empaquetado
 ├── Dockerfile              cómo se construye y ejecuta en Render
 ├── .env.example            plantilla de variables (MONGODB_URI, BREVO_API_KEY...)
 └── src/main/java/notaria/
-    ├── Main.java
-    ├── Nucleo.java
-    ├── Sesion.java
-    ├── Configuracion.java
-    ├── ListaClientes.java
-    ├── modelo/             clases de la vista lógica
-    └── ventanas/           Ventana (padre) + 6 ventanas de la vista de desarrollo
+    ├── Main.java           arranca todo: crea el Núcleo y abre las ventanas
+    │
+    ├── backend/            LÓGICA DEL NEGOCIO
+    │   ├── Nucleo.java         reglas: radicar, cambiar estado, liquidar, pagar, correos
+    │   ├── Sesion.java         quién inició sesión y con qué rol
+    │   ├── Configuracion.java  tarifas y servidor de correo
+    │   ├── ListaClientes.java  lista de clientes
+    │   └── modelo/             clases de la VISTA LÓGICA (Tramite y sus 4 tipos, Cliente, Usuario...)
+    │
+    ├── frontend/           LO QUE VE EL USUARIO (páginas web)
+    │   ├── Ventana.java        clase padre: sesión, formularios, dibujo de la página
+    │   ├── Ventana*.java       una clase por pantalla (Login, Principal, Radicación, Revisión, Caja,
+    │   │                       Administración, Consulta)
+    │   └── estilos.css         colores, letras y botones de todas las páginas
+    │
+    └── basedatos/          MONGODB
+        └── BaseDatos.java      conexión a Atlas, guardar y leer cada colección
 ```
+
+**Cómo fluye una acción** (ejemplo: el notario aprueba):
+
+1. **frontend** — `VentanaRevision.aprobar()` recibe el clic del botón.
+2. **backend** — `Nucleo.cambiarEstado()` revisa el rol y el estado, y `Tramite.avanzar()` cambia el estado.
+3. **basedatos** — `BaseDatos.guardar(tramite)` lo guarda en MongoDB Atlas.
+4. **backend** — `Nucleo.notificarCliente()` le envía el correo al cliente.
+5. **frontend** — la ventana muestra el mensaje de éxito.
+
+Regla de oro: el **frontend** nunca toca la base de datos; siempre le pide las cosas al **Núcleo**
+(backend), y solo el Núcleo usa **BaseDatos**.

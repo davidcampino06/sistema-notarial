@@ -1,10 +1,5 @@
-package notaria;
+package notaria.backend;
 
-import com.mongodb.client.MongoClients;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.model.Filters;
-import com.mongodb.client.model.ReplaceOptions;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -14,14 +9,14 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
-import notaria.modelo.*;
-import org.bson.Document;
+import notaria.basedatos.BaseDatos;
+import notaria.backend.modelo.*;
 
 /**
  * NÚCLEO del sistema (vista de desarrollo). Aquí están las reglas del
- * negocio y la conexión con MongoDB. Las ventanas nunca hablan con la
- * base de datos: siempre le piden las cosas al Núcleo.
+ * negocio. Las ventanas (frontend) nunca hablan con la base de datos:
+ * siempre le piden las cosas al Núcleo, y el Núcleo usa la clase
+ * BaseDatos (carpeta basedatos) para guardar y leer en MongoDB.
  *
  * Funcionamiento: al arrancar, leerBaseDatos() carga todo a memoria
  * (listas de Java). Cada vez que algo cambia, guardarBaseDatos(...)
@@ -33,14 +28,13 @@ public class Nucleo {
     private List<Usuario> usuarios = new ArrayList<>();
     private List<Tramite> tramites = new ArrayList<>();
 
-    private MongoDatabase baseDatos;   // null = modo de prueba sin base de datos
+    private BaseDatos baseDatos;   // null = modo de prueba sin base de datos
 
     public Nucleo(String uriMongo, String nombreBaseDatos) {
         if (uriMongo == null || uriMongo.isBlank()) {
             System.out.println("AVISO: no hay MONGODB_URI. Se trabaja solo en memoria (los datos se pierden al cerrar).");
         } else {
-            baseDatos = MongoClients.create(uriMongo).getDatabase(nombreBaseDatos);
-            System.out.println("Conectado a MongoDB, base de datos: " + nombreBaseDatos);
+            baseDatos = new BaseDatos(uriMongo, nombreBaseDatos);
         }
         leerBaseDatos();
         crearUsuariosIniciales();
@@ -373,91 +367,24 @@ public class Nucleo {
     public ListaClientes getListaClientes() { return listaClientes; }
 
     // =====================================================================
-    //  BASE DE DATOS (MongoDB)
-    //  Colecciones: usuarios, clientes, tramites, configuracion
+    //  BASE DE DATOS: el trabajo con MongoDB lo hace la clase BaseDatos
+    //  (carpeta basedatos). Si no hay MONGODB_URI, todo queda en memoria.
     // =====================================================================
 
-    private static final ReplaceOptions CREAR_SI_NO_EXISTE = new ReplaceOptions().upsert(true);
-
-    /** Guarda (o reemplaza) un documento usando su _id. */
-    private void guardar(String coleccion, Document documento) {
-        if (baseDatos == null) {
-            return;   // modo de prueba sin base de datos
-        }
-        MongoCollection<Document> c = baseDatos.getCollection(coleccion);
-        c.replaceOne(Filters.eq("_id", documento.get("_id")), documento, CREAR_SI_NO_EXISTE);
-    }
-
     public void guardarBaseDatos(Usuario u) {
-        guardar("usuarios", new Document("_id", u.getNombreUsuario())
-                .append("correo", u.getCorreo())
-                .append("contrasena", u.getContrasenaCifrada())
-                .append("activo", u.isActivo())
-                .append("rol", u.getRol().getNombre()));
+        if (baseDatos != null) baseDatos.guardar(u);
     }
 
     public void guardarBaseDatos(Cliente c) {
-        guardar("clientes", new Document("_id", c.getNumeroDocumento())
-                .append("nombres", c.getNombres())
-                .append("telefono", c.getTelefono())
-                .append("tipoDocumento", c.getTipoDocumento())
-                .append("correo", c.getCorreo()));
+        if (baseDatos != null) baseDatos.guardar(c);
     }
 
     public void guardarBaseDatos(Configuracion configuracion) {
-        Document tarifas = new Document();
-        for (Map.Entry<String, Double> e : configuracion.getTarifasVigentes().entrySet()) {
-            tarifas.append(e.getKey(), e.getValue());
-        }
-        guardar("configuracion", new Document("_id", "tarifas").append("valores", tarifas));
+        if (baseDatos != null) baseDatos.guardar(configuracion);
     }
 
     public void guardarBaseDatos(Tramite t) {
-        Document d = new Document("_id", t.getNumeroRadicado())
-                .append("tipo", t.getClass().getSimpleName())
-                .append("fechaRadicacion", t.getFechaRadicacion())
-                .append("estado", t.getEstado().name())
-                .append("observaciones", t.getObservaciones())
-                .append("digitador", t.getDigitador() == null ? null : t.getDigitador().getNombreUsuario());
-
-        // Dato propio de cada tipo de trámite
-        if (t instanceof Autenticacion) {
-            d.append("numeroFolios", ((Autenticacion) t).getNumeroFolios());
-        } else if (t instanceof DeclaracionExtrajuicio) {
-            d.append("contenido", ((DeclaracionExtrajuicio) t).getContenido());
-        } else if (t instanceof PoderEspecial) {
-            d.append("objetoPoder", ((PoderEspecial) t).getObjetoPoder());
-        } else if (t instanceof EscrituraCompraventa) {
-            d.append("valorInmueble", ((EscrituraCompraventa) t).getValorInmueble());
-        }
-
-        // Clientes: solo se guarda su número de documento (los datos están en "clientes")
-        List<String> clientes = new ArrayList<>();
-        for (Cliente c : t.getClientes()) {
-            clientes.add(c.getNumeroDocumento());
-        }
-        d.append("clientes", clientes);
-
-        List<Document> documentos = new ArrayList<>();
-        for (DocumentoAdjunto doc : t.getDocumentos()) {
-            documentos.add(new Document("nombreArchivo", doc.getNombreArchivo())
-                    .append("fechaCarga", doc.getFechaCarga()));
-        }
-        d.append("documentos", documentos);
-
-        Liquidacion l = t.getLiquidacion();
-        if (l != null) {
-            Document liq = new Document("valorDerechos", l.getValorDerechos())
-                    .append("iva", l.getIva())
-                    .append("total", l.getTotal());
-            if (l.getPago() != null) {
-                liq.append("pago", new Document("valor", l.getPago().getValor())
-                        .append("medioPago", l.getPago().getMedioPago().name())
-                        .append("fecha", l.getPago().getFecha()));
-            }
-            d.append("liquidacion", liq);
-        }
-        guardar("tramites", d);
+        if (baseDatos != null) baseDatos.guardar(t);
     }
 
     /** Carga usuarios, clientes, tarifas y trámites desde MongoDB a memoria. */
@@ -465,74 +392,14 @@ public class Nucleo {
         if (baseDatos == null) {
             return;
         }
-        for (Document d : baseDatos.getCollection("usuarios").find()) {
-            Usuario u = new Usuario(d.getString("_id"), d.getString("correo"), new Rol(d.getString("rol")));
-            u.setContrasenaCifrada(d.getString("contrasena"));
-            u.setActivo(d.getBoolean("activo"));
-            usuarios.add(u);
+        usuarios.addAll(baseDatos.leerUsuarios());
+        for (Cliente c : baseDatos.leerClientes()) {
+            listaClientes.agregar(c);
         }
-
-        for (Document d : baseDatos.getCollection("clientes").find()) {
-            listaClientes.agregar(new Cliente(d.getString("_id"), d.getString("nombres"),
-                    d.getString("telefono"), d.getString("tipoDocumento"), d.getString("correo")));
-        }
-
-        for (Document d : baseDatos.getCollection("configuracion").find(Filters.eq("_id", "tarifas"))) {
-            Document valores = d.get("valores", Document.class);
-            for (String nombre : valores.keySet()) {
-                Configuracion.getInstancia().setTarifa(nombre, valores.getDouble(nombre));
-            }
-        }
-
-        for (Document d : baseDatos.getCollection("tramites").find()) {
-            tramites.add(leerTramite(d));
-        }
+        baseDatos.leerTarifas(Configuracion.getInstancia());
+        tramites.addAll(baseDatos.leerTramites(listaClientes, usuarios));
         System.out.println("Datos cargados: " + usuarios.size() + " usuarios, "
                 + listaClientes.getClientes().size() + " clientes, " + tramites.size() + " trámites");
-    }
-
-    private Tramite leerTramite(Document d) {
-        Tramite t;
-        switch (d.getString("tipo")) {
-            case "Autenticacion":
-                t = new Autenticacion(d.getInteger("numeroFolios"));
-                break;
-            case "DeclaracionExtrajuicio":
-                t = new DeclaracionExtrajuicio(d.getString("contenido"));
-                break;
-            case "PoderEspecial":
-                t = new PoderEspecial(d.getString("objetoPoder"));
-                break;
-            case "EscrituraCompraventa":
-                t = new EscrituraCompraventa(d.getDouble("valorInmueble"));
-                break;
-            default:
-                throw new IllegalStateException("Tipo de trámite desconocido: " + d.getString("tipo"));
-        }
-        t.setNumeroRadicado(d.getString("_id"));
-        t.setFechaRadicacion(d.getDate("fechaRadicacion"));
-        t.setEstado(EstadoTramite.valueOf(d.getString("estado")));
-        t.setObservaciones(d.getString("observaciones"));
-        if (d.getString("digitador") != null) {
-            t.setDigitador(buscarUsuario(d.getString("digitador")));
-        }
-        for (String documento : d.getList("clientes", String.class)) {
-            t.agregarCliente(listaClientes.buscar(documento));
-        }
-        for (Document doc : d.getList("documentos", Document.class)) {
-            t.agregarDocumento(new DocumentoAdjunto(doc.getString("nombreArchivo"), doc.getDate("fechaCarga")));
-        }
-        Document liq = d.get("liquidacion", Document.class);
-        if (liq != null) {
-            Liquidacion l = new Liquidacion(liq.getDouble("valorDerechos"), liq.getDouble("iva"), liq.getDouble("total"));
-            Document pago = liq.get("pago", Document.class);
-            if (pago != null) {
-                l.setPago(new Pago(pago.getDouble("valor"), MedioPago.valueOf(pago.getString("medioPago")),
-                        pago.getDate("fecha")));
-            }
-            t.setLiquidacion(l);
-        }
-        return t;
     }
 
     /** La primera vez (base de datos vacía) crea un usuario por cada rol para poder entrar. */

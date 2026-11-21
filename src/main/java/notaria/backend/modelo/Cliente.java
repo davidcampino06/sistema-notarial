@@ -1,4 +1,4 @@
-package notaria.modelo;
+package notaria.backend.modelo;
 
 /** Persona que solicita trámites en la notaría (vista lógica). */
 public class Cliente {

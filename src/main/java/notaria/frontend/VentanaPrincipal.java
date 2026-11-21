@@ -1,13 +1,13 @@
-package notaria.ventanas;
+package notaria.frontend;
 
 import com.sun.net.httpserver.HttpExchange;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import notaria.Nucleo;
-import notaria.Sesion;
-import notaria.modelo.*;
+import notaria.backend.Nucleo;
+import notaria.backend.Sesion;
+import notaria.backend.modelo.*;
 
 /**
  * Ventana principal (vista de desarrollo): bandeja de trámites.

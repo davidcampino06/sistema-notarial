@@ -1,4 +1,4 @@
-package notaria.ventanas;
+package notaria.frontend;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -11,8 +11,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import notaria.Nucleo;
-import notaria.Sesion;
+import notaria.backend.Nucleo;
+import notaria.backend.Sesion;
 
 /**
  * Clase PADRE de todas las ventanas (HERENCIA). Tiene lo que todas
@@ -201,32 +201,19 @@ public abstract class Ventana implements HttpHandler {
         return URLEncoder.encode(texto, StandardCharsets.UTF_8);
     }
 
-    private static final String ESTILOS = String.join("\n",
-        ":root{--fondo:#f5f3ee;--tarjeta:#fff;--texto:#1f2a37;--suave:#6b7280;--borde:#e3ded3;",
-        "--primario:#1e3a5f;--acento:#b08d57;--ok:#1d6b45;--okf:#e6f4ec;--error:#a12b2b;--errorf:#fbeaea}",
-        "*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;",
-        "background:var(--fondo);color:var(--texto);font-size:15px}",
-        "header{display:flex;flex-wrap:wrap;gap:12px;align-items:center;background:var(--primario);color:#fff;padding:10px 20px}",
-        "header a{color:#fff;text-decoration:none}.marca{font-weight:700;letter-spacing:.5px;color:#f1e3c8}",
-        "nav{display:flex;flex-wrap:wrap;gap:4px;flex:1}nav a{padding:6px 10px;border-radius:6px}nav a:hover{background:rgba(255,255,255,.15)}",
-        ".usuario{font-size:13px}.usuario span{opacity:.75}.usuario a{margin-left:8px;text-decoration:underline}",
-        "main{max-width:1100px;margin:0 auto;padding:20px 16px}h1{font-size:24px;color:var(--primario);margin:6px 0 16px}",
-        "h2{font-size:18px;color:var(--primario);margin:0 0 12px}",
-        ".tarjeta{background:var(--tarjeta);border:1px solid var(--borde);border-radius:10px;padding:16px;margin-bottom:16px}",
-        "table{width:100%;border-collapse:collapse;background:#fff}th,td{text-align:left;padding:8px;border-bottom:1px solid var(--borde);vertical-align:top}",
-        "th{font-size:12px;text-transform:uppercase;color:var(--suave);letter-spacing:.4px}",
-        ".tabla{overflow-x:auto}.tabla table{min-width:720px}td.acciones{min-width:300px}label{display:block;font-size:13px;color:var(--suave);margin:8px 0 4px}",
-        "input,select,textarea{width:100%;padding:8px;border:1px solid var(--borde);border-radius:6px;font:inherit;background:#fff}",
-        "textarea{min-height:70px}.fila{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}",
-        ".boton,button{display:inline-block;background:var(--primario);color:#fff;border:0;border-radius:6px;padding:8px 14px;",
-        "font:inherit;cursor:pointer;text-decoration:none;margin-top:10px}.boton:hover,button:hover{opacity:.9}",
-        ".secundario{background:#fff;color:var(--primario);border:1px solid var(--primario)}.peligro{background:var(--error)}",
-        ".alerta{padding:10px 14px;border-radius:8px;margin-bottom:14px}.ok{background:var(--okf);color:var(--ok)}",
-        ".error{background:var(--errorf);color:var(--error)}",
-        ".estado{display:inline-block;padding:2px 8px;border-radius:12px;font-size:12px;background:#eef2f7;color:var(--primario);white-space:nowrap}",
-        ".estado.ANULADO{background:var(--errorf);color:var(--error)}.estado.DEVUELTO{background:#fff4e0;color:#8a5a00}",
-        ".estado.FIRMADO,.estado.ENTREGADO,.estado.APROBADO{background:var(--okf);color:var(--ok)}",
-        ".suave{color:var(--suave);font-size:13px}.acciones form{display:inline-block;margin-right:8px}",
-        ".login{max-width:380px;margin:60px auto}.login h1{text-align:center}",
-        "@media print{header,.no-imprimir{display:none}body{background:#fff}.tarjeta{border:0}}");
+    /** Los estilos se leen una sola vez del archivo estilos.css (misma carpeta frontend). */
+    private static final String ESTILOS = leerEstilos();
+
+    private static String leerEstilos() {
+        try (var archivo = Ventana.class.getResourceAsStream("estilos.css")) {
+            if (archivo != null) {
+                return new String(archivo.readAllBytes(), StandardCharsets.UTF_8);   // dentro del .jar
+            }
+            // Si se ejecuta desde VS Code, se lee directamente de la carpeta del proyecto
+            return java.nio.file.Files.readString(java.nio.file.Path.of("src/main/java/notaria/frontend/estilos.css"));
+        } catch (Exception e) {
+            System.out.println("No se encontró estilos.css: " + e.getMessage());
+            return "";
+        }
+    }
 }

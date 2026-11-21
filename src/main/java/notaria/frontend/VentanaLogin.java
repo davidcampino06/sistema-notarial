@@ -1,13 +1,13 @@
-package notaria.ventanas;
+package notaria.frontend;
 
 import com.sun.net.httpserver.HttpExchange;
 import java.io.IOException;
 import java.security.SecureRandom;
 import java.util.Map;
-import notaria.Configuracion;
-import notaria.Nucleo;
-import notaria.Sesion;
-import notaria.modelo.Usuario;
+import notaria.backend.Configuracion;
+import notaria.backend.Nucleo;
+import notaria.backend.Sesion;
+import notaria.backend.modelo.Usuario;
 
 /**
  * Ventana de inicio de sesión (vista de desarrollo).

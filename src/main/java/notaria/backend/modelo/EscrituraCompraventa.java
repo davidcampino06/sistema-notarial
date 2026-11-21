@@ -1,6 +1,6 @@
-package notaria.modelo;
+package notaria.backend.modelo;
 
-import notaria.Configuracion;
+import notaria.backend.Configuracion;
 
 /** Escritura de compraventa: se cobra un porcentaje del valor del inmueble. */
 public class EscrituraCompraventa extends Tramite {

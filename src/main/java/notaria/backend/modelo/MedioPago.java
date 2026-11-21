@@ -1,4 +1,4 @@
-package notaria.modelo;
+package notaria.backend.modelo;
 
 /** Formas en que el cliente puede pagar (enumeración de la vista lógica). */
 public enum MedioPago {

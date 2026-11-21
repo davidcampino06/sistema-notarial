@@ -1,4 +1,4 @@
-package notaria;
+package notaria.backend;
 
 import java.util.LinkedHashMap;
 import java.util.Map;

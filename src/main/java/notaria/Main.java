@@ -3,7 +3,8 @@ package notaria;
 import com.sun.net.httpserver.HttpServer;
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import notaria.ventanas.*;
+import notaria.backend.Nucleo;
+import notaria.frontend.*;
 
 /**
  * Punto de entrada del programa (vista de desarrollo).

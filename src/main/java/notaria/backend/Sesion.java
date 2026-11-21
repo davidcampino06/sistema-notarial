@@ -1,10 +1,10 @@
-package notaria;
+package notaria.backend;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import notaria.modelo.Rol;
-import notaria.modelo.Usuario;
+import notaria.backend.modelo.Rol;
+import notaria.backend.modelo.Usuario;
 
 /**
  * Sesión de un funcionario que ya inició sesión (vista de desarrollo):

@@ -1,4 +1,4 @@
-package notaria.modelo;
+package notaria.backend.modelo;
 
 import java.util.ArrayList;
 import java.util.Date;
