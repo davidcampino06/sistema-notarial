@@ -189,7 +189,8 @@ public class VentanaPrincipal extends Ventana {
         for (Cliente c : t.getClientes()) {
             html.append("<li>").append(esc(c.getNombres())).append(" — ").append(esc(c.getTipoDocumento())).append(" ")
                 .append(esc(c.getNumeroDocumento())).append(c.getTelefono() == null || c.getTelefono().isEmpty()
-                        ? "" : " · Tel. " + esc(c.getTelefono())).append("</li>");
+                        ? "" : " · Tel. " + esc(c.getTelefono()))
+                .append(c.tieneCorreo() ? " · " + esc(c.getCorreo()) : "").append("</li>");
         }
         html.append("</ul></div><div><b>Documentos adjuntos</b><ul>");
         for (DocumentoAdjunto d : t.getDocumentos()) {

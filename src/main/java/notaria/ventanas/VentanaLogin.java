@@ -4,7 +4,6 @@ import com.sun.net.httpserver.HttpExchange;
 import java.io.IOException;
 import java.security.SecureRandom;
 import java.util.Map;
-import java.util.Properties;
 import notaria.Configuracion;
 import notaria.Nucleo;
 import notaria.Sesion;
@@ -58,7 +57,9 @@ public class VentanaLogin extends Ventana {
                 + "<label>Contraseña</label><input name='campoContrasena' type='password' required>"
                 + "<button name='botonIngresar'>Ingresar</button>"
                 + "</form>"
-                + "<p class='suave'><a href='/recuperar'>¿Olvidó su contraseña?</a></p></div>"));
+                + "<p class='suave'><a href='/recuperar'>¿Olvidó su contraseña?</a></p></div>"
+                + "<p class='suave' style='text-align:center'>¿Es cliente? "
+                + "<a href='/consulta'>Consulte el estado de su trámite</a></p>"));
     }
 
     /** Valida usuario y contraseña con el Núcleo y abre la sesión. */
@@ -81,7 +82,7 @@ public class VentanaLogin extends Ventana {
     }
 
     /**
-     * Genera una contraseña temporal y la envía por correo (Servidor de correo, SMTP:587).
+     * Genera una contraseña temporal y la envía por correo (Servidor de correo).
      * La contraseña solo se cambia si el correo se pudo enviar.
      */
     private void recuperarContrasena(HttpExchange ex) throws IOException {
@@ -93,7 +94,7 @@ public class VentanaLogin extends Ventana {
             throw new IllegalStateException("El servidor de correo no está configurado. Pida al administrador una contraseña nueva");
         }
         String temporal = generarContrasenaTemporal();
-        enviarCorreo(usuario.getCorreo(), "Recuperación de contraseña - Notaría",
+        nucleo.enviarCorreo(usuario.getCorreo(), "Recuperación de contraseña - Notaría",
                 "Hola " + usuario.getNombreUsuario() + ",\n\nSu contraseña temporal es: " + temporal
                 + "\n\nIngrese al sistema y pida al administrador cambiarla si lo desea.");
         usuario.cambiarContrasena(temporal);
@@ -109,39 +110,5 @@ public class VentanaLogin extends Ventana {
             sb.append(letras.charAt(azar.nextInt(letras.length())));
         }
         return sb.toString();
-    }
-
-    /** Envía un correo usando el servidor SMTP de la Configuración (variables SMTP_*). */
-    private void enviarCorreo(String destino, String asunto, String texto) {
-        String usuarioSmtp = System.getenv("SMTP_USUARIO");
-        String claveSmtp = System.getenv("SMTP_CONTRASENA");
-        String puerto = System.getenv("SMTP_PUERTO");
-
-        Properties props = new Properties();
-        props.put("mail.smtp.host", Configuracion.getInstancia().getServidorCorreo());
-        props.put("mail.smtp.port", puerto == null ? "587" : puerto);
-        props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.starttls.enable", "true");
-        props.put("mail.smtp.connectiontimeout", "10000");
-        props.put("mail.smtp.timeout", "10000");
-
-        jakarta.mail.Session sesionCorreo = jakarta.mail.Session.getInstance(props, new jakarta.mail.Authenticator() {
-            @Override
-            protected jakarta.mail.PasswordAuthentication getPasswordAuthentication() {
-                return new jakarta.mail.PasswordAuthentication(usuarioSmtp, claveSmtp);
-            }
-        });
-        try {
-            jakarta.mail.internet.MimeMessage mensaje = new jakarta.mail.internet.MimeMessage(sesionCorreo);
-            mensaje.setFrom(new jakarta.mail.internet.InternetAddress(usuarioSmtp));
-            mensaje.setRecipients(jakarta.mail.Message.RecipientType.TO,
-                    jakarta.mail.internet.InternetAddress.parse(destino));
-            mensaje.setSubject(asunto, "UTF-8");
-            mensaje.setText(texto, "UTF-8");
-            jakarta.mail.Transport.send(mensaje);
-        } catch (jakarta.mail.MessagingException e) {
-            System.out.println("Error enviando correo: " + e.getMessage());
-            throw new IllegalStateException("No se pudo enviar el correo. Pida al administrador una contraseña nueva");
-        }
     }
 }

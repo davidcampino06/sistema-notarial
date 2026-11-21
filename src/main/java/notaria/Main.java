@@ -38,6 +38,7 @@ public class Main {
         servidor.createContext("/revision", new VentanaRevision(nucleo));
         servidor.createContext("/caja", new VentanaCaja(nucleo));
         servidor.createContext("/administracion", new VentanaAdministracion(nucleo));
+        servidor.createContext("/consulta", new VentanaConsulta(nucleo));
 
         // Sin "executor" las peticiones se atienden una por una (más simple y seguro)
         servidor.setExecutor(null);

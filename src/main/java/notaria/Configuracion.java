@@ -5,7 +5,9 @@ import java.util.Map;
 
 /**
  * Configuración del sistema (vista de desarrollo): tarifas vigentes y
- * servidor de correo. Usa el patrón SINGLETON: existe una sola
+ * servidor de correo. El correo se envía por la API web de Brevo (HTTPS),
+ * porque el plan gratis de Render bloquea el correo por SMTP.
+ * Usa el patrón SINGLETON: existe una sola
  * configuración para todo el programa y se obtiene con getInstancia().
  */
 public class Configuracion {
@@ -19,7 +21,9 @@ public class Configuracion {
     private static Configuracion instancia;
 
     private Map<String, Double> tarifasVigentes = new LinkedHashMap<>();
-    private String servidorCorreo;
+    private String servidorCorreo;      // dirección de la API de correo
+    private String claveCorreo;         // clave de la API (variable BREVO_API_KEY)
+    private String remitenteCorreo;     // correo verificado en Brevo (variable CORREO_REMITENTE)
 
     private Configuracion() {
         // Valores de ejemplo; el administrador los cambia en VentanaAdministracion
@@ -28,7 +32,10 @@ public class Configuracion {
         tarifasVigentes.put(TARIFA_PODER, 20000.0);
         tarifasVigentes.put(TARIFA_COMPRAVENTA_PORCENTAJE, 0.3);
         // El servidor de correo se configura con variables de entorno (ver README)
-        servidorCorreo = System.getenv("SMTP_HOST");
+        String url = System.getenv("CORREO_API_URL");
+        servidorCorreo = (url == null || url.isBlank()) ? "https://api.brevo.com/v3/smtp/email" : url;
+        claveCorreo = System.getenv("BREVO_API_KEY");
+        remitenteCorreo = System.getenv("CORREO_REMITENTE");
     }
 
     public static Configuracion getInstancia() {
@@ -64,7 +71,17 @@ public class Configuracion {
         return servidorCorreo;
     }
 
+    public String getClaveCorreo() {
+        return claveCorreo;
+    }
+
+    public String getRemitenteCorreo() {
+        return remitenteCorreo;
+    }
+
+    /** Hay correo configurado si existen la clave de la API y el remitente. */
     public boolean hayServidorCorreo() {
-        return servidorCorreo != null && !servidorCorreo.isBlank();
+        return claveCorreo != null && !claveCorreo.isBlank()
+                && remitenteCorreo != null && !remitenteCorreo.isBlank();
     }
 }

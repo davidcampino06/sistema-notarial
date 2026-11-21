@@ -83,7 +83,9 @@ public class VentanaRadicacion extends Ventana {
                 + "<div><label>Nombres</label><input name='nombres" + n + "'"
                 + " value='" + (c == null ? "" : esc(c.getNombres())) + "'></div>"
                 + "<div><label>Teléfono</label><input name='telefono" + n + "'"
-                + " value='" + (c == null ? "" : esc(c.getTelefono())) + "'></div></div>";
+                + " value='" + (c == null ? "" : esc(c.getTelefono())) + "'></div>"
+                + "<div><label>Correo (para avisarle)</label><input name='correo" + n + "' type='email'"
+                + " value='" + (c == null ? "" : esc(c.getCorreo())) + "'></div></div>";
     }
 
     private String opcionDoc(String tipo, Cliente c) {
@@ -144,7 +146,8 @@ public class VentanaRadicacion extends Ventana {
         }
         Cliente cliente = nucleo.getListaClientes().buscar(documento);
         if (cliente == null) {
-            cliente = new Cliente(documento, datos.get("nombres" + n), datos.get("telefono" + n), datos.get("tipoDocumento" + n));
+            cliente = new Cliente(documento, datos.get("nombres" + n), datos.get("telefono" + n),
+                    datos.get("tipoDocumento" + n), datos.get("correo" + n));
         }
         tramite.agregarCliente(cliente);
     }

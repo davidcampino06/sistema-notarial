@@ -17,7 +17,7 @@ lógica, de desarrollo y de despliegue).
 | `DeclaracionExtrajuicio` | `DeclaracionExtrajuicio.java` | `contenido`; derechos = tarifa fija |
 | `PoderEspecial` | `PoderEspecial.java` | `objetoPoder`; derechos = tarifa fija |
 | `EscrituraCompraventa` | `EscrituraCompraventa.java` | `valorInmueble`; derechos = % del valor |
-| `Cliente` | `Cliente.java` | `numeroDocumento`, `nombres`, `telefono`, `tipoDocumento` |
+| `Cliente` | `Cliente.java` | `numeroDocumento`, `nombres`, `telefono`, `tipoDocumento`, `correo` |
 | `Usuario` / `Rol` | `Usuario.java`, `Rol.java` | Usuario * — 1 Rol. La contraseña se guarda cifrada |
 | `DocumentoAdjunto` | `DocumentoAdjunto.java` | `nombreArchivo`, `fechaCarga` (composición con Trámite) |
 | `Liquidacion` | `Liquidacion.java` | `valorDerechos`, `iva`, `total`, `calcularTotal()` |
@@ -33,7 +33,7 @@ Liquidación se paga con 0..1 Pago.
 | Clase del diagrama | Métodos implementados |
 |---|---|
 | `Main` | `inicializarNucleo()`, `abrirVentanaLogin()` |
-| `Nucleo` | `iniciarSesion()`, `radicarTramite()`, `cambiarEstado()`, `registrarPago()`, `liquidar()`, `guardarBaseDatos()`, `leerBaseDatos()` |
+| `Nucleo` | `iniciarSesion()`, `radicarTramite()`, `cambiarEstado()`, `registrarPago()`, `liquidar()`, `guardarBaseDatos()`, `leerBaseDatos()`, `notificarCliente()`, `enviarCorreo()` |
 | `Sesion` | `usuarioActual`, `rol` |
 | `Configuracion` | `tarifasVigentes`, `servidorCorreo` |
 | `ListaClientes` | `clientes` |
@@ -42,10 +42,22 @@ Liquidación se paga con 0..1 Pago.
 | `VentanaRadicacion` | `radicar()`, `adjuntarDocumento()` (+ `selectorTipo`, `buscadorCliente`, `listaDocumentos`) |
 | `VentanaRevision` | `aprobar()`, `devolver()`, `firmar()` (+ `visorDocumento`, `campoObservaciones`) |
 | `VentanaCaja` | `registrarPago()`, `generarRecibo()`, `cierreCaja()` (+ `detalleLiquidacion`, `selectorMedioPago`) |
-| `VentanaAdministracion` | `gestionarUsuarios()`, `configurarTarifas()` (+ `tablaUsuarios`, `tablaTarifas`) |
+| `VentanaAdministracion` | `gestionarUsuarios()`, `configurarTarifas()`, `generarReportes()` (+ `tablaUsuarios`, `tablaTarifas`) |
+| `VentanaConsulta` | `consultarEstado()` (+ `campoRadicado`, `campoDocumento`) — página pública, sin iniciar sesión |
 
 Como el despliegue dice **Servidor Web + Navegador (HTML5)**, cada “Ventana” es una clase Java que
 dibuja su página HTML y atiende los botones de esa página.
+
+### Vista de contexto → flujos
+
+| Flujo | Dónde está |
+|---|---|
+| Cliente → Solicitud y documentos | `VentanaRadicacion.radicar()` |
+| Cliente ← Radicado y estado del trámite | Recibo de caja y página pública `VentanaConsulta` (`/consulta`) |
+| Funcionarios ↔ radicaciones, revisiones, pagos, bandeja y recibos | `VentanaPrincipal`, `VentanaRevision`, `VentanaCaja` |
+| Administrador → Usuarios, roles y tarifas | `VentanaAdministracion` |
+| Administrador ← Reportes | `VentanaAdministracion.generarReportes()` |
+| Servidor de correo ← Notificaciones al cliente | `Nucleo.notificarCliente()`: avisa al aprobar y al firmar |
 
 ### Vista funcional → componentes
 
@@ -56,13 +68,13 @@ dibuja su página HTML y atiende los botones de esa página.
 
 ### Vista de despliegue
 
-Servidor Web (Render) · Servidor de Base de Datos (MongoDB Atlas M0, TCP/TLS:27017) · Navegador (HTML5, HTTPS:443) · Servidor de correo (SMTP:587).
+Servidor Web (Render) · Servidor de Base de Datos (MongoDB Atlas M0, TCP/TLS:27017) · Navegador (HTML5, HTTPS:443) ·
+Servidor de correo (API de Brevo, HTTPS:443). Se usa la API web y no SMTP porque el plan gratis de Render bloquea SMTP.
 
 
-### Lo que NO está en el código (porque no tiene clase ni método en los diagramas)
+### Lo que NO está en el código
 
-* “Reportes y auditoría” (sale solo como flujo en la vista de contexto).
-* Notificaciones por correo al cliente: `Cliente` no tiene atributo `correo` en la vista lógica.
+* La "auditoría" (historial de cambios); en la vista de contexto el flujo es solo "Reportes".
 * Subir el archivo real del documento: `DocumentoAdjunto` solo guarda `nombreArchivo` y `fechaCarga`.
 
 El atributo `observaciones` de `Tramite` guarda lo que escribe el notario en `campoObservaciones`
@@ -149,11 +161,19 @@ Sin `MONGODB_URI` también arranca, pero solo en memoria (los datos se pierden a
 En el plan gratis el servicio se “duerme” tras 15 minutos sin uso; la primera visita tarda un poco
 en despertarlo. Los datos no se pierden porque están en Atlas.
 
-### Correo para “¿Olvidó su contraseña?” (opcional)
+### Correo (notificaciones al cliente y “¿Olvidó su contraseña?”)
 
-Agregue `SMTP_HOST`, `SMTP_PUERTO`, `SMTP_USUARIO`, `SMTP_CONTRASENA` (ver `.env.example`).
-Funciona en local; **el plan gratis de Render bloquea los puertos SMTP**, así que allá el sistema muestra
-el mensaje “pida al administrador una contraseña nueva” y el administrador la cambia en **Administración**.
+El sistema envía los correos con la **API web de Brevo** (gratis: 300 correos al día).
+
+1. Cree una cuenta gratis en <https://www.brevo.com>.
+2. **Senders, domains & dedicated IPs → Senders → Add a sender**: ponga su correo y verifíquelo con el código que le llega.
+3. **SMTP & API → API Keys → Generate a new API key**: copie la clave (empieza por `xkeysib-`).
+4. En Render (**Environment**) y en su `.env` agregue:
+   * `BREVO_API_KEY` = la clave
+   * `CORREO_REMITENTE` = el correo que verificó
+
+Sin estas variables el sistema funciona igual, solo que no envía correos. Si el correo falla, el trámite
+cambia de estado de todas formas y el error queda en los Logs.
 
 ---
 
@@ -193,7 +213,7 @@ método del `Nucleo`, bórrelo también. Para quitar una ventana completa: borre
 sistema-notarial/
 ├── pom.xml                 dependencias (MongoDB, correo) y empaquetado
 ├── Dockerfile              cómo se construye y ejecuta en Render
-├── .env.example            plantilla de variables (MONGODB_URI, SMTP...)
+├── .env.example            plantilla de variables (MONGODB_URI, BREVO_API_KEY...)
 └── src/main/java/notaria/
     ├── Main.java
     ├── Nucleo.java

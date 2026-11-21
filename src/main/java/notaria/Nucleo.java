@@ -5,6 +5,11 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.ReplaceOptions;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -137,6 +142,7 @@ public class Nucleo {
                 exigirRol(usuario, Rol.NOTARIO);          // solo el notario aprueba
                 tramite.setObservaciones(null);
                 tramite.avanzar();
+                notificarCliente(tramite);
                 break;
 
             case DEVUELTO:
@@ -154,6 +160,7 @@ public class Nucleo {
                     throw new IllegalStateException("No se puede firmar: el trámite no tiene pago registrado");
                 }
                 tramite.avanzar();
+                notificarCliente(tramite);
                 break;
 
             case ENTREGADO:
@@ -247,6 +254,91 @@ public class Nucleo {
     }
 
     // =====================================================================
+    //  CORREO: NOTIFICACIONES AL CLIENTE
+    // =====================================================================
+
+    /**
+     * Le avisa por correo a cada cliente del trámite que su trámite cambió de
+     * estado (se usa al aprobar y al firmar). Si el correo falla, el cambio de
+     * estado NO se pierde: solo se escribe el error en la consola.
+     */
+    public void notificarCliente(Tramite tramite) {
+        if (!Configuracion.getInstancia().hayServidorCorreo()) {
+            return;   // sin correo configurado no se notifica
+        }
+        String consulta = System.getenv("RENDER_EXTERNAL_URL");   // Render la crea sola
+        for (Cliente c : tramite.getClientes()) {
+            if (!c.tieneCorreo()) {
+                continue;
+            }
+            String texto = "Hola " + c.getNombres() + ",\n\n"
+                    + "Su trámite " + tramite.getTipo() + " con número de radicado " + tramite.getNumeroRadicado()
+                    + " ahora está en estado: " + tramite.getEstado().getTexto() + ".\n"
+                    + (tramite.getEstado() == EstadoTramite.FIRMADO
+                            ? "Ya puede acercarse a la notaría a reclamarlo.\n" : "")
+                    + (consulta == null ? "" : "\nConsulte el estado en: " + consulta + "/consulta\n")
+                    + "\nNotaría - Sistema de Gestión Notarial";
+            try {
+                enviarCorreo(c.getCorreo(), "Su trámite " + tramite.getNumeroRadicado() + " está "
+                        + tramite.getEstado().getTexto(), texto);
+            } catch (IllegalStateException e) {
+                System.out.println("No se pudo notificar a " + c.getCorreo() + ": " + e.getMessage());
+            }
+        }
+    }
+
+    /**
+     * Envía un correo usando la API web de Brevo (por HTTPS).
+     * Lanza IllegalStateException si el servidor de correo responde con error.
+     */
+    public void enviarCorreo(String destino, String asunto, String texto) {
+        Configuracion conf = Configuracion.getInstancia();
+        if (!conf.hayServidorCorreo()) {
+            throw new IllegalStateException("El servidor de correo no está configurado");
+        }
+        // Mensaje en formato JSON, como lo pide la API de Brevo
+        String json = "{\"sender\":{\"name\":\"Notaría\",\"email\":" + textoJson(conf.getRemitenteCorreo()) + "},"
+                + "\"to\":[{\"email\":" + textoJson(destino) + "}],"
+                + "\"subject\":" + textoJson(asunto) + ","
+                + "\"textContent\":" + textoJson(texto) + "}";
+        try {
+            HttpRequest peticion = HttpRequest.newBuilder(URI.create(conf.getServidorCorreo()))
+                    .timeout(Duration.ofSeconds(10))
+                    .header("api-key", conf.getClaveCorreo())
+                    .header("Content-Type", "application/json")
+                    .header("Accept", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(json))
+                    .build();
+            HttpResponse<String> respuesta = HttpClient.newHttpClient()
+                    .send(peticion, HttpResponse.BodyHandlers.ofString());
+            if (respuesta.statusCode() >= 300) {
+                throw new IllegalStateException("El servidor de correo respondió " + respuesta.statusCode()
+                        + ": " + respuesta.body());
+            }
+            System.out.println("Correo enviado a " + destino);
+        } catch (java.io.IOException | InterruptedException e) {
+            throw new IllegalStateException("No se pudo conectar con el servidor de correo ("
+                    + e.getClass().getSimpleName() + ")");
+        }
+    }
+
+    /** Convierte un texto a formato JSON (con comillas y caracteres especiales escapados). */
+    private static String textoJson(String texto) {
+        StringBuilder sb = new StringBuilder("\"");
+        for (char ch : texto.toCharArray()) {
+            switch (ch) {
+                case '"': sb.append("\\\""); break;
+                case '\\': sb.append("\\\\"); break;
+                case '\n': sb.append("\\n"); break;
+                case '\r': break;
+                case '\t': sb.append("\\t"); break;
+                default: sb.append(ch);
+            }
+        }
+        return sb.append("\"").toString();
+    }
+
+    // =====================================================================
     //  BÚSQUEDAS (usadas por las ventanas)
     // =====================================================================
 
@@ -308,7 +400,8 @@ public class Nucleo {
         guardar("clientes", new Document("_id", c.getNumeroDocumento())
                 .append("nombres", c.getNombres())
                 .append("telefono", c.getTelefono())
-                .append("tipoDocumento", c.getTipoDocumento()));
+                .append("tipoDocumento", c.getTipoDocumento())
+                .append("correo", c.getCorreo()));
     }
 
     public void guardarBaseDatos(Configuracion configuracion) {
@@ -381,7 +474,7 @@ public class Nucleo {
 
         for (Document d : baseDatos.getCollection("clientes").find()) {
             listaClientes.agregar(new Cliente(d.getString("_id"), d.getString("nombres"),
-                    d.getString("telefono"), d.getString("tipoDocumento")));
+                    d.getString("telefono"), d.getString("tipoDocumento"), d.getString("correo")));
         }
 
         for (Document d : baseDatos.getCollection("configuracion").find(Filters.eq("_id", "tarifas"))) {
