@@ -228,7 +228,8 @@ sistema-notarial/
     │   ├── Ventana.java        clase padre: sesión, formularios, dibujo de la página
     │   ├── Ventana*.java       una clase por pantalla (Login, Principal, Radicación, Revisión, Caja,
     │   │                       Administración, Consulta)
-    │   └── estilos.css         colores, letras y botones de todas las páginas
+    │   ├── estilos.css         colores, letras y botones de todas las páginas
+    │   └── fondo.svg           imagen del edificio de la notaría (inicio de sesión)
     │
     └── basedatos/          MONGODB
         └── BaseDatos.java      conexión a Atlas, guardar y leer cada colección
