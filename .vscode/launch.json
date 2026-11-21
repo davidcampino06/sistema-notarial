@@ -1,0 +1,13 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Sistema Notarial",
+            "request": "launch",
+            "mainClass": "notaria.Main",
+            "projectName": "sistema-notarial",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}
