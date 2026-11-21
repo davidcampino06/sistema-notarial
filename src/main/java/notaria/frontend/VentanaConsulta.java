@@ -44,18 +44,17 @@ public class VentanaConsulta extends Ventana {
         String html = "<form method='get' action='/consulta'>"
                 // campoRadicado
                 + "<label for='campoRadicado'>Número de radicado</label>"
-                + "<div class='campo'>" + ICONO_DOCUMENTO
-                + "<input id='campoRadicado' name='campoRadicado' required placeholder='Ej: 2026-000001' value='"
-                + esc(radicado) + "'></div>"
+                + "<input id='campoRadicado' name='campoRadicado' required placeholder='2026-000001' value='"
+                + esc(radicado) + "'>"
                 // campoDocumento
-                + "<label for='campoDocumento'>Documento del cliente</label>"
-                + "<div class='campo'>" + ICONO_TARJETA
-                + "<input id='campoDocumento' name='campoDocumento' required placeholder='Número de cédula o NIT' value='"
-                + esc(documento) + "'></div>"
-                + "<button class='boton-principal'>Consultar " + ICONO_FLECHA + "</button></form>"
+                + "<label for='campoDocumento'>Número de documento del cliente</label>"
+                + "<input id='campoDocumento' name='campoDocumento' required inputmode='numeric' value='"
+                + esc(documento) + "'>"
+                + "<button class='boton-principal'>Consultar</button></form>"
                 + resultado
                 + "<p class='pie'><a href='/'>Ingreso de funcionarios</a></p>";
-        responder(ex, paginaPublica("Consultar trámite", "Vea en qué estado está su trámite", html));
+        responder(ex, paginaPublica("Consultar mi trámite",
+                "Escriba el número de radicado que aparece en su recibo y su número de documento.", html));
     }
 
     /**

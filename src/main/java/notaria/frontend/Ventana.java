@@ -173,7 +173,7 @@ public abstract class Ventana implements HttpHandler {
     protected String pagina(String titulo, Sesion sesion, String contenido) {
         String encabezado = "";
         if (sesion != null) {
-            encabezado = "<header><div class='marca'><span class='sello-mini'>N</span>Notaría · SGN</div>"
+            encabezado = "<header><div class='marca'>" + SELLO_MINI + "Notaría</div>"
                     + "<nav>" + VentanaPrincipal.menuRol(sesion) + "</nav>"
                     + "<div class='usuario'>" + esc(sesion.getUsuarioActual().getNombreUsuario())
                     + " <span>(" + esc(sesion.getRol().getNombre()) + ")</span>"
@@ -188,39 +188,48 @@ public abstract class Ventana implements HttpHandler {
 
     /**
      * Página PÚBLICA (inicio de sesión, recuperar contraseña y consulta):
-     * foto del edificio a la izquierda y panel de vidrio con el formulario a la derecha.
+     * a la izquierda la hoja con el patrón de seguridad y el sello; a la
+     * derecha el formulario sobre papel limpio.
      */
     protected String paginaPublica(String titulo, String subtitulo, String contenido) {
         return "<!doctype html><html lang='es'><head><meta charset='utf-8'>"
                 + "<meta name='viewport' content='width=device-width, initial-scale=1'>"
                 + "<title>" + esc(titulo) + " · Sistema de Gestión Notarial</title>"
                 + "<style>" + ESTILOS + "</style></head><body class='publico'>"
-                + "<section class='portada'><div class='sello'>N</div>"
-                + "<h2>Sistema de Gestión<br>Notarial</h2>"
-                + "<p>Radicación, revisión, firma y caja de los trámites de la notaría en un solo lugar.</p></section>"
-                + "<main class='vidrio'><h1>" + esc(titulo) + "</h1>"
+                + "<section class='portada' style='background-image:url(" + FONDO + ")'>"
+                + "<div class='notaria'>Notaría</div>" + SELLO
+                + "<div class='pie-portada'><h2>Sistema de Gestión Notarial</h2>"
+                + "<p>Radicación, revisión, firma y caja de los trámites de la notaría.</p></div></section>"
+                + "<main class='hoja'><h1>" + esc(titulo) + "</h1>"
                 + (subtitulo.isEmpty() ? "" : "<p class='subtitulo'>" + esc(subtitulo) + "</p>")
-                + contenido + "</main></body></html>";
+                + "<div>" + contenido + "</div></main></body></html>";
     }
 
-    // Íconos (dibujos SVG pequeños) que usan los formularios
-    protected static final String ICONO_USUARIO = "<svg class='icono' viewBox='0 0 24 24' fill='none' stroke='currentColor' "
-            + "stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='8' r='4'/>"
-            + "<path d='M4 21c0-4 4-6 8-6s8 2 8 6'/></svg>";
-    protected static final String ICONO_CANDADO = "<svg class='icono' viewBox='0 0 24 24' fill='none' stroke='currentColor' "
-            + "stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><rect x='4' y='11' width='16' height='10' rx='2'/>"
-            + "<path d='M8 11V7a4 4 0 0 1 8 0v4'/></svg>";
-    protected static final String ICONO_DOCUMENTO = "<svg class='icono' viewBox='0 0 24 24' fill='none' stroke='currentColor' "
-            + "stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z'/>"
-            + "<path d='M14 3v6h6M8 13h8M8 17h5'/></svg>";
-    protected static final String ICONO_TARJETA = "<svg class='icono' viewBox='0 0 24 24' fill='none' stroke='currentColor' "
-            + "stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><rect x='3' y='5' width='18' height='14' rx='2'/>"
-            + "<circle cx='9' cy='12' r='2.5'/><path d='M14 10h4M14 14h3'/></svg>";
+    /** Sello de la notaría (dibujo SVG). El filtro "tinta" le da textura de sello de caucho. */
+    protected static final String SELLO = "<svg class='sello' viewBox='0 0 200 200' aria-hidden='true'>"
+            + "<defs><filter id='tinta'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' result='ruido'/>"
+            + "<feColorMatrix in='ruido' type='matrix' values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -2.2 1.6' result='mascara'/>"
+            + "<feComposite in='SourceGraphic' in2='mascara' operator='in'/></filter>"
+            + "<path id='arco' d='M100,100 m-73,0 a73,73 0 1,1 146,0 a73,73 0 1,1 -146,0'/></defs>"
+            + "<g filter='url(#tinta)'>"
+            + "<g fill='none' stroke='currentColor'><circle cx='100' cy='100' r='95' stroke-width='4'/>"
+            + "<circle cx='100' cy='100' r='87' stroke-width='1.5'/><circle cx='100' cy='100' r='57' stroke-width='1.5'/></g>"
+            + "<g fill='currentColor' font-family='Spectral, Georgia, serif'>"
+            + "<text font-size='15' letter-spacing='2.2'><textPath href='#arco'>NOTARÍA · SISTEMA DE GESTIÓN NOTARIAL ·</textPath></text>"
+            + "<text x='100' y='111' text-anchor='middle' font-size='32' font-weight='600'>SGN</text>"
+            + "</g></g></svg>";
+
+    /** Sello pequeño del encabezado de las páginas internas. */
+    protected static final String SELLO_MINI = "<svg class='sello-mini' viewBox='0 0 40 40' aria-hidden='true'>"
+            + "<circle cx='20' cy='20' r='18' fill='none' stroke='currentColor' stroke-width='2'/>"
+            + "<circle cx='20' cy='20' r='14' fill='none' stroke='currentColor' stroke-width='1'/>"
+            + "<text x='20' y='25' text-anchor='middle' font-family='Spectral, Georgia, serif' font-size='14' "
+            + "font-weight='600' fill='currentColor'>N</text></svg>";
+
+    // Ícono del ojo para mostrar u ocultar la contraseña
     protected static final String ICONO_OJO = "<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' "
             + "stroke-linecap='round' stroke-linejoin='round'><path d='M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z'/>"
             + "<circle cx='12' cy='12' r='3'/></svg>";
-    protected static final String ICONO_FLECHA = "<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' "
-            + "stroke-linecap='round' stroke-linejoin='round'><path d='M5 12h14M13 6l6 6-6 6'/></svg>";
 
     /** Evita que un texto escrito por el usuario se interprete como HTML. */
     protected static String esc(String texto) {
@@ -244,13 +253,14 @@ public abstract class Ventana implements HttpHandler {
     }
 
     /**
-     * Los estilos se leen una sola vez del archivo estilos.css, y la imagen de
-     * fondo (fondo.svg) se mete dentro de los estilos. Ambos están en esta misma
-     * carpeta frontend.
+     * Los estilos (estilos.css) y el patrón de seguridad (fondo.svg) se leen una
+     * sola vez. Ambos archivos están en esta misma carpeta frontend.
      */
-    private static final String ESTILOS = leerArchivo("estilos.css").replace("__FONDO__",
-            "\"data:image/svg+xml;base64," + Base64.getEncoder().encodeToString(
-                    leerArchivo("fondo.svg").getBytes(StandardCharsets.UTF_8)) + "\"");
+    private static final String ESTILOS = leerArchivo("estilos.css");
+
+    /** Patrón de seguridad (fondo.svg) listo para usar como imagen de fondo. */
+    private static final String FONDO = "data:image/svg+xml;base64," + Base64.getEncoder().encodeToString(
+            leerArchivo("fondo.svg").getBytes(StandardCharsets.UTF_8));
 
     private static String leerArchivo(String nombre) {
         try (var archivo = Ventana.class.getResourceAsStream(nombre)) {

@@ -1,27 +1,27 @@
 /* =====================================================================
-   Estilos de todas las páginas del Sistema de Gestión Notarial.
-   1) Colores y tipografía   2) Páginas públicas (login y consulta)
-   3) Páginas internas (encabezado, tarjetas, tablas, botones)
+   Estilos del Sistema de Gestión Notarial.
+   Inspirados en el papel notarial: verde de tinta de seguridad, papel
+   claro y el rojo del sello. Letras: Spectral (títulos) y Public Sans.
+   1) Colores y letras   2) Páginas públicas   3) Páginas internas
    ===================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600&family=Spectral:wght@500;600&display=swap');
 
-/* ---------- 1) Colores y tipografía ---------- */
+/* ---------- 1) Colores y letras ---------- */
 :root {
-    --fondo: #f3f1ed;
-    --tarjeta: #ffffff;
-    --texto: #1d2129;
-    --suave: #6b7280;
-    --borde: #e6e1d8;
-    --oscuro: #16191f;
-    --acento: #d7262e;          /* rojo del sello notarial */
-    --acento-hover: #b81d24;
-    --dorado: #e9a85b;
-    --ok: #1d6b45;
-    --okf: #e5f4ea;
-    --error: #b42318;
-    --errorf: #fdecea;
-    --radio: 12px;
+    --papel: #eef0ea;          /* papel de seguridad */
+    --blanco: #fbfcf9;
+    --tinta: #1f4d45;          /* verde de la tinta notarial */
+    --tinta-oscura: #173a34;
+    --trama: #8fb3a8;          /* líneas del patrón de seguridad */
+    --sello: #9e2a2b;          /* rojo del sello */
+    --texto: #1c2321;
+    --suave: #5d6b66;
+    --linea: #cdd5cd;
+    --ok: #2f6b3a;
+    --okf: #e3efe2;
+    --error: #9e2a2b;
+    --errorf: #f6e4e2;
 }
 
 * {
@@ -30,147 +30,140 @@
 
 body {
     margin: 0;
-    font-family: 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-    background: var(--fondo);
-    color: var(--texto);
+    font-family: 'Public Sans', system-ui, 'Segoe UI', Roboto, sans-serif;
     font-size: 15px;
+    line-height: 1.5;
+    background: var(--papel);
+    color: var(--texto);
+}
+
+h1,
+h2 {
+    font-family: 'Spectral', Georgia, serif;
+    font-weight: 600;
+    color: var(--tinta-oscura);
 }
 
 a {
-    color: var(--acento);
+    color: var(--tinta);
 }
 
-/* ---------- 2) Páginas públicas: inicio de sesión y consulta ---------- */
+:focus-visible {
+    outline: 2px solid var(--sello);
+    outline-offset: 2px;
+}
+
+/* ---------- 2) Páginas públicas: inicio de sesión, recuperar y consulta ---------- */
 body.publico {
     min-height: 100vh;
-    background: #2a3039 url(__FONDO__) center / cover no-repeat fixed;
-    color: #fff;
-    display: flex;
+    display: grid;
+    grid-template-columns: 1.15fr 1fr;
 }
 
-/* Lado izquierdo: nombre del sistema sobre la foto */
+/* Lado izquierdo: hoja con el patrón de seguridad y el sello */
 .portada {
-    flex: 1;
+    position: relative;
+    background-color: var(--tinta);
+    background-size: cover;
+    background-position: center;
+    color: #f3f6f2;
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
-    padding: 48px;
-    background: linear-gradient(to top, rgba(10, 12, 16, .65), rgba(10, 12, 16, 0) 55%);
+    justify-content: space-between;
+    padding: 44px 48px;
+    overflow: hidden;
 }
 
+.portada .notaria {
+    font-family: 'Spectral', Georgia, serif;
+    font-size: 20px;
+    letter-spacing: .02em;
+}
+
+/* El sello "estampado" en la esquina de la hoja */
 .portada .sello {
-    width: 54px;
-    height: 54px;
-    border-radius: 50%;
-    border: 2px solid var(--dorado);
-    color: var(--dorado);
-    display: grid;
-    place-items: center;
-    font-family: Georgia, serif;
-    font-size: 24px;
-    font-weight: 700;
-    margin-bottom: 16px;
+    position: absolute;
+    top: 34px;
+    right: 40px;
+    width: 172px;
+    height: 172px;
+    transform: rotate(-12deg);
+    color: #f0c2bb;
 }
 
-.portada h2 {
+.portada .pie-portada h2 {
     color: #fff;
-    font-size: 34px;
-    line-height: 1.15;
-    margin: 0 0 8px;
-    font-weight: 700;
+    font-size: 38px;
+    line-height: 1.1;
+    margin: 0 0 10px;
+    max-width: 14ch;
 }
 
-.portada p {
+.portada .pie-portada p {
     margin: 0;
-    max-width: 420px;
-    color: rgba(255, 255, 255, .8);
+    max-width: 38ch;
+    color: #cfe0da;
 }
 
-/* Lado derecho: panel de vidrio con el formulario */
-.vidrio {
-    width: min(520px, 100%);
-    min-height: 100vh;
-    position: relative;
+/* Lado derecho: el formulario sobre papel limpio */
+main.hoja {
+    max-width: none;
+    margin: 0;
+    background: var(--blanco);
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding: 48px 56px;
-    background: rgba(255, 255, 255, .10);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    border-left: 1px solid rgba(255, 255, 255, .25);
+    padding: 48px clamp(28px, 6vw, 88px);
 }
 
-/* Barra blanca vertical del borde del panel (como en el diseño) */
-.vidrio::before {
-    content: "";
-    position: absolute;
-    left: -3px;
-    top: 15%;
-    width: 5px;
-    height: 70%;
-    border-radius: 3px;
-    background: rgba(255, 255, 255, .9);
+.hoja > * {
+    width: 100%;
+    max-width: 380px;
 }
 
-.vidrio h1 {
-    color: #fff;
-    text-align: center;
-    font-size: 40px;
-    font-weight: 600;
-    margin: 0 0 6px;
+.hoja h1 {
+    font-size: 34px;
+    margin: 0 0 4px;
 }
 
-.vidrio .subtitulo {
-    text-align: center;
-    color: rgba(255, 255, 255, .8);
+.hoja .subtitulo {
+    color: var(--suave);
     margin: 0 0 28px;
-    font-size: 14px;
 }
 
-.vidrio label {
-    color: #fff;
-    font-size: 15px;
+.hoja label {
+    color: var(--texto);
     font-weight: 500;
-    margin: 16px 0 6px;
+    font-size: 14px;
+    margin: 18px 0 6px;
 }
 
-/* Campo con ícono a la izquierda (y ojo a la derecha en la contraseña) */
 .campo {
     position: relative;
 }
 
-.campo svg.icono {
-    position: absolute;
-    left: 14px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 18px;
-    height: 18px;
-    color: #6b7280;
-    pointer-events: none;
+.hoja input {
+    padding: 12px 14px;
+    background: #fff;
+    border: 1px solid #b9c4bb;
+    border-radius: 6px;
 }
 
-.vidrio .campo input {
-    padding: 13px 44px;
-    border: 0;
-    border-radius: 10px;
-    background: #fff;
-    color: var(--texto);
+.hoja .campo input[type=password],
+.hoja .campo input.con-ojo {
+    padding-right: 46px;
 }
 
 .ver-clave {
     position: absolute;
-    right: 8px;
+    right: 6px;
     top: 50%;
     transform: translateY(-50%);
-    background: none !important;
-    border: 0;
-    padding: 6px;
     margin: 0 !important;
-    color: #6b7280 !important;
-    cursor: pointer;
-    width: auto !important;
+    padding: 6px !important;
+    background: none !important;
+    color: var(--suave) !important;
+    border: 0;
 }
 
 .ver-clave svg {
@@ -181,90 +174,68 @@ body.publico {
 
 .enlace-pequeno {
     display: inline-block;
-    margin-top: 8px;
-    font-size: 12px;
-    color: rgba(255, 255, 255, .85);
-    text-decoration: none;
-}
-
-.enlace-pequeno:hover {
-    text-decoration: underline;
-}
-
-.separador {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin: 26px 0 14px;
-    color: rgba(255, 255, 255, .85);
+    margin-top: 10px;
     font-size: 13px;
 }
 
-.separador::before,
-.separador::after {
-    content: "";
-    flex: 1;
-    height: 1px;
-    background: rgba(255, 255, 255, .45);
+.hoja .boton-principal {
+    width: 100%;
+    margin-top: 24px;
+    padding: 12px;
 }
 
-.vidrio .boton-principal {
-    width: 100%;
-    margin-top: 26px;
+.separador {
+    margin: 34px 0 10px;
+    padding-top: 22px;
+    border-top: 1px solid var(--linea);
+    color: var(--suave);
+    font-size: 14px;
 }
 
-.vidrio .boton-claro {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    width: 100%;
+.boton-claro {
+    display: block;
+    text-align: center;
     padding: 11px;
-    border-radius: 10px;
-    background: rgba(255, 255, 255, .92);
-    color: var(--oscuro);
+    border: 1px solid var(--tinta);
+    border-radius: 6px;
+    color: var(--tinta);
     text-decoration: none;
     font-weight: 500;
 }
 
-.vidrio .boton-claro:hover {
-    background: #fff;
+.boton-claro:hover {
+    background: #e4ebe5;
 }
 
-.vidrio .pie {
-    text-align: center;
+.hoja .pie {
     font-size: 13px;
+    color: var(--suave);
     margin-top: 18px;
-    color: rgba(255, 255, 255, .85);
 }
 
-.vidrio .pie a {
-    color: #fff;
-}
-
-.vidrio .alerta {
-    margin: 14px 0 0;
+.hoja .alerta {
+    margin: 16px 0 0;
 }
 
 .resultado-consulta {
-    background: rgba(255, 255, 255, .95);
-    color: var(--texto);
-    border-radius: 10px;
-    padding: 14px 16px;
-    margin-top: 18px;
-    line-height: 1.6;
+    margin-top: 20px;
+    padding: 16px 18px;
+    border: 1px solid var(--linea);
+    border-left: 4px solid var(--tinta);
+    border-radius: 6px;
+    background: #fff;
+    line-height: 1.7;
 }
 
 /* ---------- 3) Páginas internas ---------- */
 header {
     display: flex;
     flex-wrap: wrap;
-    gap: 14px;
+    gap: 16px;
     align-items: center;
-    background: var(--oscuro);
+    background: var(--tinta);
     color: #fff;
-    padding: 12px 24px;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, .15);
+    padding: 10px 28px;
 }
 
 header a {
@@ -276,114 +247,89 @@ header a {
     display: flex;
     align-items: center;
     gap: 10px;
-    font-weight: 600;
-    letter-spacing: .3px;
+    font-family: 'Spectral', Georgia, serif;
+    font-size: 18px;
 }
 
 .marca .sello-mini {
     width: 30px;
     height: 30px;
-    border-radius: 50%;
-    border: 2px solid var(--dorado);
-    color: var(--dorado);
-    display: grid;
-    place-items: center;
-    font-family: Georgia, serif;
-    font-size: 14px;
-    font-weight: 700;
+    color: #e9b4ad;
+    transform: rotate(-9deg);
 }
 
 nav {
     display: flex;
     flex-wrap: wrap;
-    gap: 4px;
+    gap: 2px;
     flex: 1;
 }
 
 nav a {
-    padding: 7px 12px;
-    border-radius: 8px;
+    padding: 8px 12px;
+    border-radius: 4px;
     font-size: 14px;
-    color: rgba(255, 255, 255, .85);
+    color: #d6e4df;
 }
 
 nav a:hover {
-    background: rgba(255, 255, 255, .1);
+    background: var(--tinta-oscura);
     color: #fff;
 }
 
 .usuario {
     font-size: 13px;
-}
-
-.usuario span {
-    opacity: .7;
+    color: #d6e4df;
 }
 
 .usuario a {
-    margin-left: 10px;
-    padding: 6px 12px;
-    border-radius: 8px;
-    background: var(--acento);
-}
-
-.usuario a:hover {
-    background: var(--acento-hover);
+    margin-left: 12px;
+    text-decoration: underline;
+    text-underline-offset: 3px;
 }
 
 main {
     max-width: 1120px;
     margin: 0 auto;
-    padding: 26px 16px;
+    padding: 28px 20px 48px;
 }
 
 h1 {
-    font-size: 26px;
-    font-weight: 600;
-    color: var(--oscuro);
-    margin: 4px 0 18px;
+    font-size: 30px;
+    margin: 0 0 20px;
 }
 
 h2 {
-    font-size: 17px;
-    font-weight: 600;
-    color: var(--oscuro);
+    font-size: 19px;
     margin: 0 0 12px;
 }
 
 .tarjeta {
-    background: var(--tarjeta);
-    border: 1px solid var(--borde);
-    border-radius: var(--radio);
-    padding: 18px;
-    margin-bottom: 18px;
-    box-shadow: 0 2px 10px rgba(22, 25, 31, .04);
+    background: var(--blanco);
+    border: 1px solid var(--linea);
+    border-radius: 6px;
+    padding: 20px;
+    margin-bottom: 20px;
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
-    background: #fff;
 }
 
 th,
 td {
     text-align: left;
     padding: 10px 8px;
-    border-bottom: 1px solid var(--borde);
+    border-bottom: 1px solid var(--linea);
     vertical-align: top;
 }
 
 th {
-    font-size: 11px;
-    text-transform: uppercase;
-    color: var(--suave);
-    letter-spacing: .6px;
+    font-size: 13px;
     font-weight: 600;
-}
-
-tr:hover td {
-    background: #faf8f5;
+    color: var(--suave);
+    border-bottom: 2px solid var(--tinta);
 }
 
 .tabla {
@@ -409,19 +355,12 @@ input,
 select,
 textarea {
     width: 100%;
-    padding: 10px 12px;
-    border: 1px solid var(--borde);
-    border-radius: 10px;
+    padding: 9px 11px;
+    border: 1px solid #b9c4bb;
+    border-radius: 4px;
     font: inherit;
     background: #fff;
     color: var(--texto);
-}
-
-input:focus,
-select:focus,
-textarea:focus {
-    outline: 2px solid rgba(215, 38, 46, .25);
-    border-color: var(--acento);
 }
 
 textarea {
@@ -436,15 +375,12 @@ textarea {
 
 .boton,
 button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    background: var(--acento);
+    display: inline-block;
+    background: var(--tinta);
     color: #fff;
     border: 0;
-    border-radius: 10px;
-    padding: 10px 18px;
+    border-radius: 4px;
+    padding: 9px 16px;
     font: inherit;
     font-weight: 500;
     cursor: pointer;
@@ -454,32 +390,36 @@ button {
 
 .boton:hover,
 button:hover {
-    background: var(--acento-hover);
+    background: var(--tinta-oscura);
 }
 
-.boton svg,
-button svg {
-    width: 18px;
-    height: 18px;
+/* Dentro de las tablas los botones van alineados con el texto */
+td .boton,
+td button {
+    margin-top: 0;
 }
 
 .secundario {
-    background: #fff;
-    color: var(--oscuro);
-    border: 1px solid #cfc8bc;
+    background: transparent;
+    color: var(--tinta);
+    border: 1px solid var(--tinta);
 }
 
 .secundario:hover {
-    background: #f6f3ee;
+    background: #e4ebe5;
 }
 
 .peligro {
-    background: #7a1116;
+    background: var(--sello);
+}
+
+.peligro:hover {
+    background: #7f2122;
 }
 
 .alerta {
     padding: 11px 14px;
-    border-radius: 10px;
+    border-radius: 4px;
     margin-bottom: 16px;
 }
 
@@ -495,30 +435,28 @@ button svg {
 
 .estado {
     display: inline-block;
-    padding: 3px 10px;
-    border-radius: 20px;
+    padding: 1px 9px;
+    border: 1px solid currentColor;
+    border-radius: 3px;
     font-size: 12px;
     font-weight: 500;
-    background: #eef1f6;
-    color: #2d3a55;
+    color: var(--tinta);
     white-space: nowrap;
 }
 
 .estado.ANULADO {
-    background: var(--errorf);
-    color: var(--error);
+    color: var(--sello);
 }
 
 .estado.DEVUELTO {
-    background: #fff3df;
     color: #8a5a00;
 }
 
 .estado.FIRMADO,
 .estado.ENTREGADO,
 .estado.APROBADO {
-    background: var(--okf);
     color: var(--ok);
+    background: var(--okf);
 }
 
 .suave {
@@ -532,19 +470,36 @@ button svg {
 }
 
 /* ---------- Celular ---------- */
-@media (max-width: 800px) {
+@media (max-width: 820px) {
+    body.publico {
+        grid-template-columns: 1fr;
+    }
+
     .portada {
+        min-height: 190px;
+        flex-direction: row;
+        align-items: center;
+        padding: 22px;
+    }
+
+    .portada .sello {
+        top: 18px;
+        right: 18px;
+        width: 104px;
+        height: 104px;
+    }
+
+    .portada .pie-portada h2 {
+        font-size: 24px;
+    }
+
+    .portada .pie-portada p,
+    .portada .notaria {
         display: none;
     }
 
-    .vidrio {
-        width: 100%;
-        padding: 40px 22px;
-        border-left: 0;
-    }
-
-    .vidrio::before {
-        display: none;
+    .hoja {
+        padding: 32px 22px 48px;
     }
 }
 
@@ -561,6 +516,5 @@ button svg {
 
     .tarjeta {
         border: 0;
-        box-shadow: none;
     }
 }
