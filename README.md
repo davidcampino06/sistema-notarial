@@ -56,10 +56,8 @@ dibuja su página HTML y atiende los botones de esa página.
 
 ### Vista de despliegue
 
-Servidor Web = Render · Base de datos = MongoDB Atlas · Navegador = HTML5 · Servidor de correo = SMTP:587.
+Servidor Web (Render) · Servidor de Base de Datos (MongoDB Atlas M0, TCP/TLS:27017) · Navegador (HTML5, HTTPS:443) · Servidor de correo (SMTP:587).
 
-> El diagrama de despliegue dice **MySQL DB / TCP:3306**. Como el sistema usa MongoDB, en el diagrama
-> debería decir **MongoDB Atlas** y **TCP:27017**.
 
 ### Lo que NO está en el código (porque no tiene clase ni método en los diagramas)
 
@@ -67,8 +65,8 @@ Servidor Web = Render · Base de datos = MongoDB Atlas · Navegador = HTML5 · S
 * Notificaciones por correo al cliente: `Cliente` no tiene atributo `correo` en la vista lógica.
 * Subir el archivo real del documento: `DocumentoAdjunto` solo guarda `nombreArchivo` y `fechaCarga`.
 
-Único atributo agregado: `observaciones` en `Tramite`, para guardar lo que escribe el notario en
-`campoObservaciones` al devolver (y el motivo al anular).
+El atributo `observaciones` de `Tramite` guarda lo que escribe el notario en `campoObservaciones`
+al devolver (y el motivo al anular).
 
 ---
 
