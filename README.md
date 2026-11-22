@@ -105,3 +105,9 @@ Web Service con **Language: Docker**. Variables de entorno:
 * **Nueva acción:** la regla en `Nucleo`, un método en el controlador que corresponda
   (`@PostMapping`…) y el botón en la ventana de React.
 * **Quitar una acción:** borrar el método del controlador y el botón en React.
+
+## 8. Historias de usuario y mockups
+
+* [docs/historias-usuario](docs/historias-usuario/00-resumen.md): 25 historias de usuario con criterios de
+  aceptación en Gherkin. Cada una también está como **issue** del repositorio (etiqueta `historia de usuario`).
+* [docs/mockups](docs/mockups/README.md): 21 pantallas (P01–P21) de la aplicación, relacionadas con las historias.
