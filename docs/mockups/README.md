@@ -3,6 +3,10 @@
 21 pantallas tomadas de la aplicación en React con datos de prueba. P01–P17 muestran el camino
 principal de cada rol y P18–P21 los errores, el acceso denegado y la vista en celular.
 
+Mapa de navegación (cómo se pasa de una pantalla a otra según el rol): [mapa-de-navegacion.png](mapa-de-navegacion.png)
+
+![Mapa de navegación](mapa-de-navegacion.png)
+
 | Pantalla | Archivo | Historias de usuario |
 |---|---|---|
 | P01 Inicio de sesión | [P01-inicio-de-sesion.png](P01-inicio-de-sesion.png) | HU_001, HU_002 |
