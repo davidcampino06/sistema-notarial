@@ -110,4 +110,4 @@ Web Service con **Language: Docker**. Variables de entorno:
 
 * [docs/historias-usuario](docs/historias-usuario/00-resumen.md): 25 historias de usuario con criterios de
   aceptación en Gherkin. Cada una también está como **issue** del repositorio (etiqueta `historia de usuario`).
-* [docs/mockups](docs/mockups/README.md): 21 pantallas (P01–P21) de la aplicación, relacionadas con las historias.
+* [docs/mockups](docs/mockups/README.md): 21 pantallas (P01–P21) de la aplicación, relacionadas con las historias, y el mapa de navegación (también en [Miro](https://miro.com/app/board/uXjVELcayXs=/)).
