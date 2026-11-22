@@ -1,4 +1,4 @@
-package notaria.backend.modelo;
+package notaria.modelo;
 
 /**
  * Rol de un usuario. Un Usuario "tiene" exactamente 1 Rol (vista lógica).

@@ -1,49 +1,38 @@
 package notaria;
 
-import com.sun.net.httpserver.HttpServer;
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import notaria.backend.Nucleo;
-import notaria.frontend.*;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
- * Punto de entrada del programa (vista de desarrollo).
- * 1. inicializarNucleo(): crea el Núcleo y se conecta a MongoDB.
- * 2. abrirVentanaLogin(): arranca el servidor web; la primera página es el login.
+ * Punto de entrada del backend (vista de desarrollo).
+ * SpringApplication.run() arranca el servidor web y crea el Núcleo
+ * (inicializarNucleo). Las ventanas ahora están en el frontend (React).
  */
+@SpringBootApplication
 public class Main {
 
-    private static Nucleo nucleo;
-
-    public static void main(String[] args) throws IOException {
-        inicializarNucleo();
-        abrirVentanaLogin();
+    public static void main(String[] args) {
+        SpringApplication.run(Main.class, args);
     }
 
-    public static void inicializarNucleo() {
-        String uri = System.getenv("MONGODB_URI");          // cadena de conexión de MongoDB Atlas
-        String nombreBd = System.getenv("MONGODB_DB");
-        nucleo = new Nucleo(uri, nombreBd == null ? "notaria" : nombreBd);
-    }
-
-    public static void abrirVentanaLogin() throws IOException {
-        String puerto = System.getenv("PORT");               // Render dice en qué puerto escuchar
-        int numeroPuerto = puerto == null ? 8080 : Integer.parseInt(puerto);
-
-        HttpServer servidor = HttpServer.create(new InetSocketAddress("0.0.0.0", numeroPuerto), 0);
-
-        // Cada dirección (ruta) la atiende una ventana
-        servidor.createContext("/", new VentanaLogin(nucleo));
-        servidor.createContext("/principal", new VentanaPrincipal(nucleo));
-        servidor.createContext("/radicacion", new VentanaRadicacion(nucleo));
-        servidor.createContext("/revision", new VentanaRevision(nucleo));
-        servidor.createContext("/caja", new VentanaCaja(nucleo));
-        servidor.createContext("/administracion", new VentanaAdministracion(nucleo));
-        servidor.createContext("/consulta", new VentanaConsulta(nucleo));
-
-        // Sin "executor" las peticiones se atienden una por una (más simple y seguro)
-        servidor.setExecutor(null);
-        servidor.start();
-        System.out.println("Sistema de Gestión Notarial listo en http://localhost:" + numeroPuerto);
+    /**
+     * CORS: permite que la página de React (en Vercel, otra dirección)
+     * pueda llamar a este backend. FRONTEND_URL es la dirección de Vercel.
+     */
+    @Bean
+    public WebMvcConfigurer permitirFrontend() {
+        String frontend = System.getenv("FRONTEND_URL");
+        String origen = (frontend == null || frontend.isBlank()) ? "*" : frontend;
+        return new WebMvcConfigurer() {
+            @Override
+            public void addCorsMappings(CorsRegistry registro) {
+                registro.addMapping("/api/**")
+                        .allowedOriginPatterns(origen)
+                        .allowedMethods("GET", "POST", "PUT", "DELETE");
+            }
+        };
     }
 }

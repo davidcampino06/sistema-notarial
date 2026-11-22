@@ -1,59 +1,47 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <!-- Spring Boot: trae las versiones correctas de todas las librerías -->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.5.6</version>
+        <relativePath/>
+    </parent>
+
     <groupId>notaria</groupId>
-    <artifactId>sistema-notarial</artifactId>
+    <artifactId>sistema-notarial-backend</artifactId>
     <version>1.0</version>
-    <packaging>jar</packaging>
-    <name>Sistema de Gestion Notarial</name>
+    <name>Sistema de Gestion Notarial - Backend</name>
 
     <properties>
-        <maven.compiler.release>17</maven.compiler.release>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <java.version>17</java.version>
+        <mongodb.version>5.2.1</mongodb.version>
     </properties>
 
     <dependencies>
-        <!-- Conexion con MongoDB (base de datos) -->
+        <!-- Servidor web y API REST (controladores) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <!-- Conexión con MongoDB (la usa la clase BaseDatos) -->
         <dependency>
             <groupId>org.mongodb</groupId>
             <artifactId>mongodb-driver-sync</artifactId>
-            <version>5.2.1</version>
         </dependency>
     </dependencies>
 
     <build>
         <finalName>sistema-notarial</finalName>
-        <!-- estilos.css y fondo.svg están junto a las ventanas (carpeta frontend); se copian al .jar -->
-        <resources>
-            <resource>
-                <directory>src/main/java</directory>
-                <includes><include>**/*.css</include><include>**/*.svg</include></includes>
-            </resource>
-        </resources>
         <plugins>
-            <!-- Empaqueta todo (programa + librerias) en un solo .jar ejecutable -->
+            <!-- Empaqueta todo en un .jar ejecutable -->
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>3.6.0</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals><goal>shade</goal></goals>
-                        <configuration>
-                            <createDependencyReducedPom>false</createDependencyReducedPom>
-                            <transformers>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>notaria.Main</mainClass>
-                                </transformer>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
-                            </transformers>
-                        </configuration>
-                    </execution>
-                </executions>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
         </plugins>
     </build>

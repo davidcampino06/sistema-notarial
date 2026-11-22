@@ -1,8 +1,9 @@
-package notaria.backend.modelo;
+package notaria.modelo;
 
 import java.security.SecureRandom;
 import java.security.spec.KeySpec;
 import java.util.Base64;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 
@@ -70,7 +71,8 @@ public class Usuario {
     public Rol getRol() { return rol; }
     public void setRol(Rol rol) { this.rol = rol; }
 
-    /** Solo para guardar/leer de la base de datos (ya viene cifrada). */
+    /** Solo para guardar/leer de la base de datos (ya viene cifrada). @JsonIgnore: nunca se envía a React. */
+    @JsonIgnore
     public String getContrasenaCifrada() { return contrasena; }
     public void setContrasenaCifrada(String cifrada) { this.contrasena = cifrada; }
 }

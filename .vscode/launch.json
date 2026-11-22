@@ -3,10 +3,10 @@
     "configurations": [
         {
             "type": "java",
-            "name": "Sistema Notarial",
+            "name": "Backend Sistema Notarial",
             "request": "launch",
             "mainClass": "notaria.Main",
-            "projectName": "sistema-notarial",
+            "projectName": "sistema-notarial-backend",
             "envFile": "${workspaceFolder}/.env"
         }
     ]

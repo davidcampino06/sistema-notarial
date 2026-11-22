@@ -1,4 +1,4 @@
-package notaria.backend;
+package notaria.logica;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -9,19 +9,25 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 import notaria.basedatos.BaseDatos;
-import notaria.backend.modelo.*;
+import notaria.modelo.*;
 
 /**
  * NÚCLEO del sistema (vista de desarrollo). Aquí están las reglas del
- * negocio. Las ventanas (frontend) nunca hablan con la base de datos:
- * siempre le piden las cosas al Núcleo, y el Núcleo usa la clase
- * BaseDatos (carpeta basedatos) para guardar y leer en MongoDB.
+ * negocio. Las ventanas de React nunca hablan con la base de datos: le
+ * piden las cosas a los controladores, los controladores al Núcleo, y el
+ * Núcleo usa la clase BaseDatos (carpeta basedatos) para MongoDB.
+ *
+ * @Service: Spring crea UN solo Núcleo al arrancar y se lo entrega a
+ * todos los controladores que lo necesitan.
  *
  * Funcionamiento: al arrancar, leerBaseDatos() carga todo a memoria
  * (listas de Java). Cada vez que algo cambia, guardarBaseDatos(...)
  * guarda ese objeto en MongoDB.
  */
+@Service
 public class Nucleo {
 
     private ListaClientes listaClientes = new ListaClientes();
@@ -30,7 +36,8 @@ public class Nucleo {
 
     private BaseDatos baseDatos;   // null = modo de prueba sin base de datos
 
-    public Nucleo(String uriMongo, String nombreBaseDatos) {
+    /** Spring llena estos datos con las variables de entorno MONGODB_URI y MONGODB_DB. */
+    public Nucleo(@Value("${MONGODB_URI:}") String uriMongo, @Value("${MONGODB_DB:notaria}") String nombreBaseDatos) {
         if (uriMongo == null || uriMongo.isBlank()) {
             System.out.println("AVISO: no hay MONGODB_URI. Se trabaja solo en memoria (los datos se pierden al cerrar).");
         } else {
@@ -44,7 +51,7 @@ public class Nucleo {
     //  INICIAR SESIÓN
     // =====================================================================
 
-    public Usuario iniciarSesion(String nombreUsuario, String contrasena) {
+    public synchronized Usuario iniciarSesion(String nombreUsuario, String contrasena) {
         Usuario usuario = buscarUsuario(nombreUsuario);
         if (usuario == null || !usuario.verificarContrasena(contrasena)) {
             throw new IllegalArgumentException("Usuario o contraseña incorrectos");
@@ -60,7 +67,7 @@ public class Nucleo {
     // =====================================================================
 
     /** Le da número de radicado y fecha al trámite y lo guarda. */
-    public Tramite radicarTramite(Tramite tramite) {
+    public synchronized Tramite radicarTramite(Tramite tramite) {
         if (tramite.getClientes().isEmpty()) {
             throw new IllegalArgumentException("El trámite debe tener al menos un cliente");
         }
@@ -103,7 +110,7 @@ public class Nucleo {
      * @param observaciones obligatorias al devolver o anular
      * @param digitador     obligatorio al asignar (Radicado -> En elaboración)
      */
-    public void cambiarEstado(Usuario usuario, Tramite tramite, EstadoTramite nuevo,
+    public synchronized void cambiarEstado(Usuario usuario, Tramite tramite, EstadoTramite nuevo,
                               String observaciones, Usuario digitador) {
         EstadoTramite actual = tramite.getEstado();
 
@@ -214,7 +221,7 @@ public class Nucleo {
     //  CAJA: LIQUIDAR Y REGISTRAR PAGO
     // =====================================================================
 
-    public Liquidacion liquidar(Usuario usuario, Tramite tramite) {
+    public synchronized Liquidacion liquidar(Usuario usuario, Tramite tramite) {
         exigirRol(usuario, Rol.CAJERO);
         if (tramite.getEstado() == EstadoTramite.ANULADO) {
             throw new IllegalStateException("No se puede liquidar un trámite anulado");
@@ -229,7 +236,7 @@ public class Nucleo {
         return liquidacion;
     }
 
-    public Pago registrarPago(Usuario usuario, Tramite tramite, MedioPago medioPago) {
+    public synchronized Pago registrarPago(Usuario usuario, Tramite tramite, MedioPago medioPago) {
         exigirRol(usuario, Rol.CAJERO);
         Liquidacion liquidacion = tramite.getLiquidacion();
         if (liquidacion == null) {
@@ -336,7 +343,7 @@ public class Nucleo {
     //  BÚSQUEDAS (usadas por las ventanas)
     // =====================================================================
 
-    public Tramite buscarTramite(String numeroRadicado) {
+    public synchronized Tramite buscarTramite(String numeroRadicado) {
         for (Tramite t : tramites) {
             if (t.getNumeroRadicado().equals(numeroRadicado)) {
                 return t;
@@ -345,7 +352,7 @@ public class Nucleo {
         throw new IllegalArgumentException("No existe el trámite " + numeroRadicado);
     }
 
-    public Usuario buscarUsuario(String nombreUsuario) {
+    public synchronized Usuario buscarUsuario(String nombreUsuario) {
         for (Usuario u : usuarios) {
             if (u.getNombreUsuario().equalsIgnoreCase(nombreUsuario == null ? "" : nombreUsuario.trim())) {
                 return u;
@@ -354,7 +361,7 @@ public class Nucleo {
         return null;
     }
 
-    public void agregarUsuario(Usuario usuario) {
+    public synchronized void agregarUsuario(Usuario usuario) {
         if (buscarUsuario(usuario.getNombreUsuario()) != null) {
             throw new IllegalArgumentException("Ya existe el usuario " + usuario.getNombreUsuario());
         }
@@ -362,8 +369,9 @@ public class Nucleo {
         guardarBaseDatos(usuario);
     }
 
-    public List<Tramite> getTramites() { return tramites; }
-    public List<Usuario> getUsuarios() { return usuarios; }
+    // Se devuelven copias para que nadie modifique las listas mientras se recorren
+    public synchronized List<Tramite> getTramites() { return new ArrayList<>(tramites); }
+    public synchronized List<Usuario> getUsuarios() { return new ArrayList<>(usuarios); }
     public ListaClientes getListaClientes() { return listaClientes; }
 
     // =====================================================================

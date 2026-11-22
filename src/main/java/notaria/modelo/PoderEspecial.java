@@ -1,6 +1,6 @@
-package notaria.backend.modelo;
+package notaria.modelo;
 
-import notaria.backend.Configuracion;
+import notaria.logica.Configuracion;
 
 /** Poder especial: tiene una tarifa fija. */
 public class PoderEspecial extends Tramite {

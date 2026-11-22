@@ -1,22 +1,22 @@
-package notaria.backend;
+package notaria.logica;
 
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map;
 import java.util.UUID;
-import notaria.backend.modelo.Rol;
-import notaria.backend.modelo.Usuario;
+import notaria.modelo.Rol;
+import notaria.modelo.Usuario;
 
 /**
  * Sesión de un funcionario que ya inició sesión (vista de desarrollo):
  * guarda el usuarioActual y su rol.
  *
- * Como es una aplicación web, a cada sesión se le da un código secreto
- * (token) que el navegador guarda en una cookie. Con ese código se
- * encuentra la sesión en cada petición.
+ * Al iniciar sesión se crea un código secreto (token). React lo guarda y
+ * lo envía en cada petición (encabezado "Authorization: Bearer <token>");
+ * con ese código se encuentra la sesión.
  */
 public class Sesion {
 
-    private static final Map<String, Sesion> sesionesActivas = new HashMap<>();
+    private static final Map<String, Sesion> sesionesActivas = new ConcurrentHashMap<>();
 
     private Usuario usuarioActual;
     private Rol rol;

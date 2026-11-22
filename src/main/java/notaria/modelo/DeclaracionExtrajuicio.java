@@ -1,6 +1,6 @@
-package notaria.backend.modelo;
+package notaria.modelo;
 
-import notaria.backend.Configuracion;
+import notaria.logica.Configuracion;
 
 /** Declaración extrajuicio: tiene una tarifa fija. */
 public class DeclaracionExtrajuicio extends Tramite {

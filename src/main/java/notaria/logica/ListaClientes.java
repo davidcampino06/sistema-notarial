@@ -1,8 +1,8 @@
-package notaria.backend;
+package notaria.logica;
 
 import java.util.ArrayList;
 import java.util.List;
-import notaria.backend.modelo.Cliente;
+import notaria.modelo.Cliente;
 
 /** Lista de todos los clientes de la notaría (vista de desarrollo). */
 public class ListaClientes {

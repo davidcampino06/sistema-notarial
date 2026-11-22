@@ -8,9 +8,9 @@ import com.mongodb.client.model.ReplaceOptions;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import notaria.backend.Configuracion;
-import notaria.backend.ListaClientes;
-import notaria.backend.modelo.*;
+import notaria.logica.Configuracion;
+import notaria.logica.ListaClientes;
+import notaria.modelo.*;
 import org.bson.Document;
 
 /**

@@ -1,4 +1,4 @@
-package notaria.backend.modelo;
+package notaria.modelo;
 
 /**
  * Cuenta de cobro de un trámite (vista lógica).

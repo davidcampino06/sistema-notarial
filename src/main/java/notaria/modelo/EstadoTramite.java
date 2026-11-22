@@ -1,4 +1,4 @@
-package notaria.backend.modelo;
+package notaria.modelo;
 
 /**
  * Estados por los que pasa un trámite (enumeración de la vista lógica).
