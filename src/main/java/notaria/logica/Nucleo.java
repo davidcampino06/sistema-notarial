@@ -267,7 +267,7 @@ public class Nucleo {
         if (!Configuracion.getInstancia().hayServidorCorreo()) {
             return;   // sin correo configurado no se notifica
         }
-        String consulta = System.getenv("RENDER_EXTERNAL_URL");   // Render la crea sola
+        String consulta = System.getenv("FRONTEND_URL");   // página de consulta en React (Vercel)
         for (Cliente c : tramite.getClientes()) {
             if (!c.tieneCorreo()) {
                 continue;
